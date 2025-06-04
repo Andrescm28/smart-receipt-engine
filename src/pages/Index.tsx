@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
 import Layout from "@/components/Layout";
@@ -8,15 +7,37 @@ import Billing from "@/components/Billing";
 import Reports from "@/components/Reports";
 import Users from "@/components/Users";
 import Login from "@/components/Login";
+import CashierLayout from "@/components/CashierLayout";
+import CashCut from "@/components/CashCut";
 
 const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState<'admin' | 'cashier'>('cashier');
+  const [showCashCut, setShowCashCut] = useState(false);
 
   if (!isAuthenticated) {
     return <Login onLogin={setIsAuthenticated} onRoleChange={setUserRole} />;
   }
 
+  // Layout específico para cajero
+  if (userRole === 'cashier') {
+    return (
+      <>
+        <CashierLayout 
+          onLogout={() => setIsAuthenticated(false)}
+          onCashCut={() => setShowCashCut(true)}
+        >
+          <Billing />
+        </CashierLayout>
+        
+        {showCashCut && (
+          <CashCut onClose={() => setShowCashCut(false)} />
+        )}
+      </>
+    );
+  }
+
+  // Layout completo para admin
   return (
     <Layout userRole={userRole} onLogout={() => setIsAuthenticated(false)}>
       <Routes>

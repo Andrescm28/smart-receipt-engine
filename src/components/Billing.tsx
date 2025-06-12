@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,14 +29,18 @@ const Billing = () => {
   const [customerEmail, setCustomerEmail] = useState('');
   const [discount, setDiscount] = useState(0);
 
-  // Demo products
+  // Demo products - ropa femenina e infantil
   const products: Product[] = [
-    { id: '1', code: 'CC001', name: 'Coca Cola 500ml', price: 4.00, stock: 150 },
-    { id: '2', code: 'PAN001', name: 'Pan Integral', price: 3.00, stock: 50 },
-    { id: '3', code: 'LEC001', name: 'Leche Descremada 1L', price: 3.50, stock: 75 },
-    { id: '4', code: 'ARR001', name: 'Arroz Blanco 1kg', price: 2.80, stock: 200 },
-    { id: '5', code: 'ACE001', name: 'Aceite Vegetal 1L', price: 5.50, stock: 80 },
-    { id: '6', code: 'AZU001', name: 'Azúcar Blanca 1kg', price: 2.20, stock: 120 }
+    { id: '1', code: 'VN001', name: 'Vestido Niña Princesa Rosa', price: 45.99, stock: 25 },
+    { id: '2', code: 'BM001', name: 'Blusa Mujer Manga Larga', price: 32.50, stock: 18 },
+    { id: '3', code: 'JN001', name: 'Jeans Niña Talla 8-12', price: 28.75, stock: 30 },
+    { id: '4', code: 'FM001', name: 'Falda Mujer A-Line', price: 38.00, stock: 15 },
+    { id: '5', code: 'CN001', name: 'Camiseta Niña Unicornio', price: 18.99, stock: 40 },
+    { id: '6', code: 'ZM001', name: 'Zapatos Mujer Tacón Bajo', price: 65.00, stock: 12 },
+    { id: '7', code: 'LN001', name: 'Leggings Niña Estampados', price: 22.50, stock: 35 },
+    { id: '8', code: 'SM001', name: 'Suéter Mujer Cuello V', price: 48.75, stock: 20 },
+    { id: '9', code: 'VF001', name: 'Vestido Fiesta Mujer', price: 85.99, stock: 8 },
+    { id: '10', code: 'TN001', name: 'Tutú Niña Ballet', price: 35.50, stock: 22 }
   ];
 
   const filteredProducts = products.filter(product =>
@@ -159,7 +162,7 @@ const Billing = () => {
       <div className="lg:col-span-2 space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Sistema de Facturación</h1>
-          <p className="text-gray-600">Selecciona productos para crear una nueva factura</p>
+          <p className="text-gray-600">Selecciona productos de ropa femenina e infantil</p>
         </div>
 
         {/* Search */}

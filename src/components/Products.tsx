@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,39 +32,75 @@ const Products = ({ userRole }: ProductsProps) => {
   const [products, setProducts] = useState<Product[]>([
     {
       id: '1',
-      code: 'CC001',
-      name: 'Coca Cola 500ml',
-      price: 4.00,
-      category: 'Bebidas',
+      code: 'VN001',
+      name: 'Vestido Niña Princesa Rosa',
+      price: 45.99,
+      category: 'Vestidos Niñas',
       unit: 'Unidad',
-      stock: 150
+      stock: 25
     },
     {
       id: '2',
-      code: 'PAN001',
-      name: 'Pan Integral',
-      price: 3.00,
-      category: 'Panadería',
+      code: 'BM001',
+      name: 'Blusa Mujer Manga Larga',
+      price: 32.50,
+      category: 'Blusas',
       unit: 'Unidad',
-      stock: 50
+      stock: 18
     },
     {
       id: '3',
-      code: 'LEC001',
-      name: 'Leche Descremada 1L',
-      price: 3.50,
-      category: 'Lácteos',
-      unit: 'Litro',
-      stock: 75
+      code: 'JN001',
+      name: 'Jeans Niña Talla 8-12',
+      price: 28.75,
+      category: 'Pantalones Niñas',
+      unit: 'Unidad',
+      stock: 30
     },
     {
       id: '4',
-      code: 'ARR001',
-      name: 'Arroz Blanco 1kg',
-      price: 2.80,
-      category: 'Granos',
-      unit: 'Kilogramo',
-      stock: 200
+      code: 'FM001',
+      name: 'Falda Mujer A-Line',
+      price: 38.00,
+      category: 'Faldas',
+      unit: 'Unidad',
+      stock: 15
+    },
+    {
+      id: '5',
+      code: 'CN001',
+      name: 'Camiseta Niña Unicornio',
+      price: 18.99,
+      category: 'Camisetas Niñas',
+      unit: 'Unidad',
+      stock: 40
+    },
+    {
+      id: '6',
+      code: 'ZM001',
+      name: 'Zapatos Mujer Tacón Bajo',
+      price: 65.00,
+      category: 'Calzado',
+      unit: 'Par',
+      stock: 12
+    },
+    {
+      id: '7',
+      code: 'LN001',
+      name: 'Leggings Niña Estampados',
+      price: 22.50,
+      category: 'Pantalones Niñas',
+      unit: 'Unidad',
+      stock: 35
+    },
+    {
+      id: '8',
+      code: 'SM001',
+      name: 'Suéter Mujer Cuello V',
+      price: 48.75,
+      category: 'Suéteres',
+      unit: 'Unidad',
+      stock: 20
     }
   ]);
 
@@ -78,8 +113,20 @@ const Products = ({ userRole }: ProductsProps) => {
     stock: 0
   });
 
-  const categories = ['Bebidas', 'Panadería', 'Lácteos', 'Granos', 'Carnes', 'Verduras', 'Limpieza'];
-  const units = ['Unidad', 'Kilogramo', 'Litro', 'Gramo', 'Metro'];
+  const categories = [
+    'Vestidos Niñas', 
+    'Camisetas Niñas', 
+    'Pantalones Niñas', 
+    'Blusas', 
+    'Faldas', 
+    'Suéteres', 
+    'Calzado', 
+    'Accesorios',
+    'Ropa Interior',
+    'Pijamas'
+  ];
+  
+  const units = ['Unidad', 'Par', 'Set', 'Paquete'];
 
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -138,8 +185,8 @@ const Products = ({ userRole }: ProductsProps) => {
   };
 
   const getStockBadgeColor = (stock: number) => {
-    if (stock > 50) return 'bg-green-100 text-green-800';
-    if (stock > 20) return 'bg-yellow-100 text-yellow-800';
+    if (stock > 20) return 'bg-green-100 text-green-800';
+    if (stock > 10) return 'bg-yellow-100 text-yellow-800';
     return 'bg-red-100 text-red-800';
   };
 
@@ -148,7 +195,7 @@ const Products = ({ userRole }: ProductsProps) => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Gestión de Productos</h1>
-          <p className="text-gray-600">Administra tu inventario de productos</p>
+          <p className="text-gray-600">Administra tu inventario de ropa femenina e infantil</p>
         </div>
         
         {userRole === 'admin' && (
@@ -172,7 +219,7 @@ const Products = ({ userRole }: ProductsProps) => {
                     id="code"
                     value={newProduct.code}
                     onChange={(e) => setNewProduct({...newProduct, code: e.target.value})}
-                    placeholder="Ej: CC001"
+                    placeholder="Ej: VN001"
                   />
                 </div>
                 
@@ -318,7 +365,7 @@ const Products = ({ userRole }: ProductsProps) => {
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600">Stock:</span>
                   <Badge className={getStockBadgeColor(product.stock)}>
-                    {product.stock} unidades
+                    {product.stock} {product.unit === 'Par' ? 'pares' : 'unidades'}
                   </Badge>
                 </div>
               </div>

@@ -19,7 +19,7 @@ const CashierLayout = ({ children, onLogout, onCashCut }: CashierLayoutProps) =>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <FileText className="h-6 w-6 text-blue-600" />
-              <h1 className="text-xl font-bold text-gray-800">Terminal de Venta</h1>
+              <h1 className="text-xl font-bold text-gray-800">🛒 SuperMarket POS</h1>
             </div>
             <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
               Cajero/a

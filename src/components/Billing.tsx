@@ -29,18 +29,18 @@ const Billing = () => {
   const [customerEmail, setCustomerEmail] = useState('');
   const [discount, setDiscount] = useState(0);
 
-  // Demo products - ropa femenina e infantil
+  // Demo products - supermercado
   const products: Product[] = [
-    { id: '1', code: 'VN001', name: 'Vestido Niña Princesa Rosa', price: 45.99, stock: 25 },
-    { id: '2', code: 'BM001', name: 'Blusa Mujer Manga Larga', price: 32.50, stock: 18 },
-    { id: '3', code: 'JN001', name: 'Jeans Niña Talla 8-12', price: 28.75, stock: 30 },
-    { id: '4', code: 'FM001', name: 'Falda Mujer A-Line', price: 38.00, stock: 15 },
-    { id: '5', code: 'CN001', name: 'Camiseta Niña Unicornio', price: 18.99, stock: 40 },
-    { id: '6', code: 'ZM001', name: 'Zapatos Mujer Tacón Bajo', price: 65.00, stock: 12 },
-    { id: '7', code: 'LN001', name: 'Leggings Niña Estampados', price: 22.50, stock: 35 },
-    { id: '8', code: 'SM001', name: 'Suéter Mujer Cuello V', price: 48.75, stock: 20 },
-    { id: '9', code: 'VF001', name: 'Vestido Fiesta Mujer', price: 85.99, stock: 8 },
-    { id: '10', code: 'TN001', name: 'Tutú Niña Ballet', price: 35.50, stock: 22 }
+    { id: '1', code: 'BEB001', name: 'Coca Cola 500ml', price: 1.25, stock: 120 },
+    { id: '2', code: 'BEB002', name: 'Agua Purificada 1L', price: 0.75, stock: 200 },
+    { id: '3', code: 'PAN001', name: 'Pan Blanco Molde', price: 2.50, stock: 45 },
+    { id: '4', code: 'LAC001', name: 'Leche Entera 1L', price: 3.20, stock: 60 },
+    { id: '5', code: 'LAC002', name: 'Yogurt Natural 500g', price: 2.80, stock: 40 },
+    { id: '6', code: 'GRA001', name: 'Arroz Blanco 1kg', price: 1.90, stock: 85 },
+    { id: '7', code: 'GRA002', name: 'Frijoles Rojos 1kg', price: 2.40, stock: 70 },
+    { id: '8', code: 'CAR001', name: 'Pechuga de Pollo 1kg', price: 5.50, stock: 30 },
+    { id: '9', code: 'FRU001', name: 'Banano (Libra)', price: 0.60, stock: 150 },
+    { id: '10', code: 'ACE001', name: 'Aceite Vegetal 1L', price: 3.75, stock: 48 },
   ];
 
   const filteredProducts = products.filter(product =>
@@ -162,7 +162,7 @@ const Billing = () => {
       <div className="lg:col-span-2 space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Sistema de Facturación</h1>
-          <p className="text-gray-600">Selecciona productos de ropa femenina e infantil</p>
+          <p className="text-gray-600">Selecciona productos del supermercado</p>
         </div>
 
         {/* Search */}

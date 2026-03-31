@@ -144,6 +144,7 @@ const Billing = () => {
     setCustomerName('');
     setCustomerEmail('');
     setDiscount(0);
+    setAmountPaid(0);
 
     console.log('Factura generada:', {
       number: invoiceNumber,

@@ -54,19 +54,20 @@ const Products = ({ userRole }: ProductsProps) => {
   });
 
   const categories = [
-    'Vestidos Niñas', 
-    'Camisetas Niñas', 
-    'Pantalones Niñas', 
-    'Blusas', 
-    'Faldas', 
-    'Suéteres', 
-    'Calzado', 
-    'Accesorios',
-    'Ropa Interior',
-    'Pijamas'
+    'Bebidas', 
+    'Panadería', 
+    'Lácteos', 
+    'Granos y Cereales', 
+    'Carnes', 
+    'Frutas y Verduras', 
+    'Limpieza', 
+    'Snacks',
+    'Abarrotes',
+    'Congelados',
+    'Cuidado Personal'
   ];
   
-  const units = ['Unidad', 'Par', 'Set', 'Paquete'];
+  const units = ['Unidad', 'Kilogramo', 'Libra', 'Litro', 'Paquete'];
 
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

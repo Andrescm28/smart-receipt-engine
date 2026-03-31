@@ -30,78 +30,18 @@ const Products = ({ userRole }: ProductsProps) => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   
   const [products, setProducts] = useState<Product[]>([
-    {
-      id: '1',
-      code: 'VN001',
-      name: 'Vestido Niña Princesa Rosa',
-      price: 45.99,
-      category: 'Vestidos Niñas',
-      unit: 'Unidad',
-      stock: 25
-    },
-    {
-      id: '2',
-      code: 'BM001',
-      name: 'Blusa Mujer Manga Larga',
-      price: 32.50,
-      category: 'Blusas',
-      unit: 'Unidad',
-      stock: 18
-    },
-    {
-      id: '3',
-      code: 'JN001',
-      name: 'Jeans Niña Talla 8-12',
-      price: 28.75,
-      category: 'Pantalones Niñas',
-      unit: 'Unidad',
-      stock: 30
-    },
-    {
-      id: '4',
-      code: 'FM001',
-      name: 'Falda Mujer A-Line',
-      price: 38.00,
-      category: 'Faldas',
-      unit: 'Unidad',
-      stock: 15
-    },
-    {
-      id: '5',
-      code: 'CN001',
-      name: 'Camiseta Niña Unicornio',
-      price: 18.99,
-      category: 'Camisetas Niñas',
-      unit: 'Unidad',
-      stock: 40
-    },
-    {
-      id: '6',
-      code: 'ZM001',
-      name: 'Zapatos Mujer Tacón Bajo',
-      price: 65.00,
-      category: 'Calzado',
-      unit: 'Par',
-      stock: 12
-    },
-    {
-      id: '7',
-      code: 'LN001',
-      name: 'Leggings Niña Estampados',
-      price: 22.50,
-      category: 'Pantalones Niñas',
-      unit: 'Unidad',
-      stock: 35
-    },
-    {
-      id: '8',
-      code: 'SM001',
-      name: 'Suéter Mujer Cuello V',
-      price: 48.75,
-      category: 'Suéteres',
-      unit: 'Unidad',
-      stock: 20
-    }
+    { id: '1', code: 'BEB001', name: 'Coca Cola 500ml', price: 1.25, category: 'Bebidas', unit: 'Unidad', stock: 120 },
+    { id: '2', code: 'BEB002', name: 'Agua Purificada 1L', price: 0.75, category: 'Bebidas', unit: 'Unidad', stock: 200 },
+    { id: '3', code: 'PAN001', name: 'Pan Blanco Molde', price: 2.50, category: 'Panadería', unit: 'Unidad', stock: 45 },
+    { id: '4', code: 'LAC001', name: 'Leche Entera 1L', price: 3.20, category: 'Lácteos', unit: 'Unidad', stock: 60 },
+    { id: '5', code: 'LAC002', name: 'Yogurt Natural 500g', price: 2.80, category: 'Lácteos', unit: 'Unidad', stock: 40 },
+    { id: '6', code: 'GRA001', name: 'Arroz Blanco 1kg', price: 1.90, category: 'Granos y Cereales', unit: 'Kilogramo', stock: 85 },
+    { id: '7', code: 'GRA002', name: 'Frijoles Rojos 1kg', price: 2.40, category: 'Granos y Cereales', unit: 'Kilogramo', stock: 70 },
+    { id: '8', code: 'CAR001', name: 'Pechuga de Pollo 1kg', price: 5.50, category: 'Carnes', unit: 'Kilogramo', stock: 30 },
+    { id: '9', code: 'FRU001', name: 'Banano (Libra)', price: 0.60, category: 'Frutas y Verduras', unit: 'Libra', stock: 150 },
+    { id: '10', code: 'LIM001', name: 'Detergente Líquido 1L', price: 4.50, category: 'Limpieza', unit: 'Unidad', stock: 35 },
+    { id: '11', code: 'SNK001', name: 'Galletas Surtidas 400g', price: 3.10, category: 'Snacks', unit: 'Paquete', stock: 55 },
+    { id: '12', code: 'ACE001', name: 'Aceite Vegetal 1L', price: 3.75, category: 'Abarrotes', unit: 'Unidad', stock: 48 },
   ]);
 
   const [newProduct, setNewProduct] = useState({

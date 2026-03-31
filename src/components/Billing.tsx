@@ -28,6 +28,7 @@ const Billing = () => {
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [discount, setDiscount] = useState(0);
+  const [amountPaid, setAmountPaid] = useState(0);
 
   // Demo products - supermercado
   const products: Product[] = [

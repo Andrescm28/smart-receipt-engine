@@ -136,7 +136,7 @@ const Products = ({ userRole }: ProductsProps) => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Gestión de Productos</h1>
-          <p className="text-gray-600">Administra tu inventario de ropa femenina e infantil</p>
+          <p className="text-gray-600">Administra el inventario de tu supermercado</p>
         </div>
         
         {userRole === 'admin' && (

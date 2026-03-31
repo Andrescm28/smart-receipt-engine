@@ -28,6 +28,7 @@ const Billing = () => {
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [discount, setDiscount] = useState(0);
+  const [amountPaid, setAmountPaid] = useState(0);
 
   // Demo products - supermercado
   const products: Product[] = [
@@ -143,6 +144,7 @@ const Billing = () => {
     setCustomerName('');
     setCustomerEmail('');
     setDiscount(0);
+    setAmountPaid(0);
 
     console.log('Factura generada:', {
       number: invoiceNumber,
@@ -345,6 +347,66 @@ const Billing = () => {
               <div className="flex justify-between text-lg font-bold">
                 <span>Total:</span>
                 <span>${total.toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* Paga Con / Cambio */}
+            <Separator />
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="amountPaid" className="text-sm font-semibold">Paga con:</Label>
+                <div className="relative mt-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
+                  <Input
+                    id="amountPaid"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={amountPaid || ''}
+                    onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)}
+                    placeholder="0.00"
+                    className="pl-7 text-lg font-semibold"
+                  />
+                </div>
+              </div>
+
+              {/* Quick amount buttons */}
+              {total > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {[Math.ceil(total), Math.ceil(total / 5) * 5, Math.ceil(total / 10) * 10, Math.ceil(total / 20) * 20].filter((v, i, a) => v >= total && a.indexOf(v) === i).slice(0, 4).map((amount) => (
+                    <Button
+                      key={amount}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => setAmountPaid(amount)}
+                    >
+                      ${amount.toFixed(2)}
+                    </Button>
+                  ))}
+                </div>
+              )}
+
+              <div className={`p-3 rounded-lg text-center ${
+                amountPaid >= total && amountPaid > 0
+                  ? 'bg-green-50 border border-green-200'
+                  : amountPaid > 0
+                  ? 'bg-red-50 border border-red-200'
+                  : 'bg-gray-50 border border-gray-200'
+              }`}>
+                <p className="text-xs text-gray-500 uppercase font-medium">Cambio</p>
+                <p className={`text-2xl font-bold ${
+                  amountPaid >= total && amountPaid > 0
+                    ? 'text-green-600'
+                    : amountPaid > 0
+                    ? 'text-red-600'
+                    : 'text-gray-400'
+                }`}>
+                  ${amountPaid > 0 ? (amountPaid - total).toFixed(2) : '0.00'}
+                </p>
+                {amountPaid > 0 && amountPaid < total && (
+                  <p className="text-xs text-red-500 mt-1">Monto insuficiente</p>
+                )}
               </div>
             </div>
             

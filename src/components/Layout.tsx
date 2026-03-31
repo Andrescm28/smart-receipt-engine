@@ -29,7 +29,7 @@ const Layout = ({ children, userRole, onLogout }: LayoutProps) => {
       {/* Sidebar */}
       <Card className="w-64 h-screen rounded-none border-r shadow-lg">
         <div className="p-6 border-b">
-          <h1 className="text-xl font-bold text-gray-800">POS Facturación</h1>
+          <h1 className="text-xl font-bold text-gray-800">🛒 SuperMarket POS</h1>
           <p className="text-sm text-gray-600 capitalize">{userRole === 'admin' ? 'Administrador' : 'Cajero'}</p>
         </div>
         

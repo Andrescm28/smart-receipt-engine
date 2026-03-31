@@ -51,11 +51,11 @@ const Dashboard = () => {
   ];
 
   const topProducts = [
-    { name: 'Coca Cola 500ml', sold: 85, revenue: '$340' },
-    { name: 'Pan Integral', sold: 72, revenue: '$216' },
-    { name: 'Leche Descremada', sold: 65, revenue: '$195' },
-    { name: 'Arroz Blanco 1kg', sold: 58, revenue: '$174' },
-    { name: 'Aceite Vegetal', sold: 45, revenue: '$225' },
+    { name: 'Coca Cola 500ml', sold: 285, revenue: '$356' },
+    { name: 'Pan Blanco Molde', sold: 198, revenue: '$495' },
+    { name: 'Leche Entera 1L', sold: 175, revenue: '$560' },
+    { name: 'Arroz Blanco 1kg', sold: 142, revenue: '$270' },
+    { name: 'Pechuga de Pollo 1kg', sold: 98, revenue: '$539' },
   ];
 
   return (

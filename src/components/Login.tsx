@@ -51,9 +51,9 @@ const Login = ({ onLogin, onRoleChange }: LoginProps) => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-gray-800">
-            Sistema de Facturación
+            🛒 SuperMarket POS
           </CardTitle>
-          <p className="text-gray-600">Inicia sesión para continuar</p>
+          <p className="text-gray-600">Sistema de Punto de Venta</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">

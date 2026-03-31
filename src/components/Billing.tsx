@@ -162,7 +162,7 @@ const Billing = () => {
       <div className="lg:col-span-2 space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Sistema de Facturación</h1>
-          <p className="text-gray-600">Selecciona productos de ropa femenina e infantil</p>
+          <p className="text-gray-600">Selecciona productos del supermercado</p>
         </div>
 
         {/* Search */}

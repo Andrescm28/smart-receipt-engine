@@ -23,19 +23,19 @@ const Reports = () => {
   ];
 
   const productSalesData = [
-    { name: 'Coca Cola', value: 30, color: '#3B82F6' },
-    { name: 'Pan Integral', value: 25, color: '#10B981' },
-    { name: 'Leche', value: 20, color: '#F59E0B' },
-    { name: 'Arroz', value: 15, color: '#EF4444' },
-    { name: 'Otros', value: 10, color: '#8B5CF6' },
+    { name: 'Bebidas', value: 28, color: '#3B82F6' },
+    { name: 'Lácteos', value: 22, color: '#10B981' },
+    { name: 'Carnes', value: 18, color: '#F59E0B' },
+    { name: 'Granos', value: 17, color: '#EF4444' },
+    { name: 'Otros', value: 15, color: '#8B5CF6' },
   ];
 
   const topProducts = [
-    { name: 'Coca Cola 500ml', sold: 285, revenue: 1140 },
-    { name: 'Pan Integral', sold: 247, revenue: 741 },
-    { name: 'Leche Descremada', sold: 198, revenue: 693 },
-    { name: 'Arroz Blanco 1kg', sold: 156, revenue: 437 },
-    { name: 'Aceite Vegetal', sold: 134, revenue: 737 },
+    { name: 'Coca Cola 500ml', sold: 285, revenue: 356 },
+    { name: 'Pan Blanco Molde', sold: 247, revenue: 618 },
+    { name: 'Leche Entera 1L', sold: 198, revenue: 634 },
+    { name: 'Arroz Blanco 1kg', sold: 156, revenue: 296 },
+    { name: 'Pechuga de Pollo 1kg', sold: 134, revenue: 737 },
   ];
 
   const userSales = [

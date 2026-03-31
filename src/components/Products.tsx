@@ -306,7 +306,7 @@ const Products = ({ userRole }: ProductsProps) => {
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600">Stock:</span>
                   <Badge className={getStockBadgeColor(product.stock)}>
-                    {product.stock} {product.unit === 'Par' ? 'pares' : 'unidades'}
+                    {product.stock} {product.unit === 'Kilogramo' ? 'kg' : product.unit === 'Libra' ? 'lb' : 'uds'}
                   </Badge>
                 </div>
               </div>

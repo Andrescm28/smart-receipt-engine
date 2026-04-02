@@ -8,41 +8,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Search, Plus, Edit, Trash2 } from 'lucide-react';
-
-interface Product {
-  id: string;
-  code: string;
-  name: string;
-  price: number;
-  category: string;
-  unit: string;
-  stock: number;
-}
+import type { Product } from '@/pages/Index';
 
 interface ProductsProps {
   userRole: 'admin' | 'cashier';
+  products: Product[];
+  onProductsChange: (products: Product[]) => void;
 }
 
-const Products = ({ userRole }: ProductsProps) => {
+const Products = ({ userRole, products, onProductsChange }: ProductsProps) => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  
-  const [products, setProducts] = useState<Product[]>([
-    { id: '1', code: 'BEB001', name: 'Coca Cola 500ml', price: 1.25, category: 'Bebidas', unit: 'Unidad', stock: 120 },
-    { id: '2', code: 'BEB002', name: 'Agua Purificada 1L', price: 0.75, category: 'Bebidas', unit: 'Unidad', stock: 200 },
-    { id: '3', code: 'PAN001', name: 'Pan Blanco Molde', price: 2.50, category: 'Panadería', unit: 'Unidad', stock: 45 },
-    { id: '4', code: 'LAC001', name: 'Leche Entera 1L', price: 3.20, category: 'Lácteos', unit: 'Unidad', stock: 60 },
-    { id: '5', code: 'LAC002', name: 'Yogurt Natural 500g', price: 2.80, category: 'Lácteos', unit: 'Unidad', stock: 40 },
-    { id: '6', code: 'GRA001', name: 'Arroz Blanco 1kg', price: 1.90, category: 'Granos y Cereales', unit: 'Kilogramo', stock: 85 },
-    { id: '7', code: 'GRA002', name: 'Frijoles Rojos 1kg', price: 2.40, category: 'Granos y Cereales', unit: 'Kilogramo', stock: 70 },
-    { id: '8', code: 'CAR001', name: 'Pechuga de Pollo 1kg', price: 5.50, category: 'Carnes', unit: 'Kilogramo', stock: 30 },
-    { id: '9', code: 'FRU001', name: 'Banano (Libra)', price: 0.60, category: 'Frutas y Verduras', unit: 'Libra', stock: 150 },
-    { id: '10', code: 'LIM001', name: 'Detergente Líquido 1L', price: 4.50, category: 'Limpieza', unit: 'Unidad', stock: 35 },
-    { id: '11', code: 'SNK001', name: 'Galletas Surtidas 400g', price: 3.10, category: 'Snacks', unit: 'Paquete', stock: 55 },
-    { id: '12', code: 'ACE001', name: 'Aceite Vegetal 1L', price: 3.75, category: 'Abarrotes', unit: 'Unidad', stock: 48 },
-  ]);
 
   const [newProduct, setNewProduct] = useState({
     code: '',
@@ -54,17 +32,8 @@ const Products = ({ userRole }: ProductsProps) => {
   });
 
   const categories = [
-    'Bebidas', 
-    'Panadería', 
-    'Lácteos', 
-    'Granos y Cereales', 
-    'Carnes', 
-    'Frutas y Verduras', 
-    'Limpieza', 
-    'Snacks',
-    'Abarrotes',
-    'Congelados',
-    'Cuidado Personal'
+    'Bebidas', 'Panadería', 'Lácteos', 'Granos y Cereales', 'Carnes',
+    'Frutas y Verduras', 'Limpieza', 'Snacks', 'Abarrotes', 'Congelados', 'Cuidado Personal'
   ];
   
   const units = ['Unidad', 'Kilogramo', 'Libra', 'Litro', 'Paquete'];
@@ -76,34 +45,19 @@ const Products = ({ userRole }: ProductsProps) => {
 
   const handleSaveProduct = () => {
     if (!newProduct.code || !newProduct.name || !newProduct.category || !newProduct.unit) {
-      toast({
-        title: "Error",
-        description: "Todos los campos son obligatorios",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Todos los campos son obligatorios", variant: "destructive" });
       return;
     }
 
     if (editingProduct) {
-      setProducts(products.map(p => 
-        p.id === editingProduct.id 
-          ? { ...newProduct, id: editingProduct.id }
-          : p
+      onProductsChange(products.map(p =>
+        p.id === editingProduct.id ? { ...newProduct, id: editingProduct.id } : p
       ));
-      toast({
-        title: "Producto actualizado",
-        description: "El producto se ha actualizado correctamente",
-      });
+      toast({ title: "Producto actualizado", description: "El producto se ha actualizado correctamente" });
     } else {
-      const product: Product = {
-        ...newProduct,
-        id: Date.now().toString()
-      };
-      setProducts([...products, product]);
-      toast({
-        title: "Producto creado",
-        description: "El producto se ha agregado correctamente",
-      });
+      const product: Product = { ...newProduct, id: Date.now().toString() };
+      onProductsChange([...products, product]);
+      toast({ title: "Producto creado", description: "El producto se ha agregado correctamente" });
     }
 
     setNewProduct({ code: '', name: '', price: 0, category: '', unit: '', stock: 0 });
@@ -118,11 +72,14 @@ const Products = ({ userRole }: ProductsProps) => {
   };
 
   const handleDeleteProduct = (id: string) => {
-    setProducts(products.filter(p => p.id !== id));
-    toast({
-      title: "Producto eliminado",
-      description: "El producto se ha eliminado correctamente",
-    });
+    onProductsChange(products.filter(p => p.id !== id));
+    toast({ title: "Producto eliminado", description: "El producto se ha eliminado correctamente" });
+  };
+
+  const handleOpenNewProduct = () => {
+    setEditingProduct(null);
+    setNewProduct({ code: '', name: '', price: 0, category: '', unit: '', stock: 0 });
+    setIsDialogOpen(true);
   };
 
   const getStockBadgeColor = (stock: number) => {
@@ -142,95 +99,50 @@ const Products = ({ userRole }: ProductsProps) => {
         {userRole === 'admin' && (
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
+              <Button className="flex items-center gap-2" onClick={handleOpenNewProduct}>
                 <Plus className="h-4 w-4" />
                 Nuevo Producto
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>
-                  {editingProduct ? 'Editar Producto' : 'Nuevo Producto'}
-                </DialogTitle>
+                <DialogTitle>{editingProduct ? 'Editar Producto' : 'Nuevo Producto'}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="code">Código</Label>
-                  <Input
-                    id="code"
-                    value={newProduct.code}
-                    onChange={(e) => setNewProduct({...newProduct, code: e.target.value})}
-                    placeholder="Ej: VN001"
-                  />
+                  <Input id="code" value={newProduct.code} onChange={(e) => setNewProduct({...newProduct, code: e.target.value})} placeholder="Ej: BEB003" />
                 </div>
-                
                 <div>
                   <Label htmlFor="name">Nombre</Label>
-                  <Input
-                    id="name"
-                    value={newProduct.name}
-                    onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
-                    placeholder="Nombre del producto"
-                  />
+                  <Input id="name" value={newProduct.name} onChange={(e) => setNewProduct({...newProduct, name: e.target.value})} placeholder="Nombre del producto" />
                 </div>
-                
                 <div>
                   <Label htmlFor="price">Precio</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    step="0.01"
-                    value={newProduct.price}
-                    onChange={(e) => setNewProduct({...newProduct, price: parseFloat(e.target.value) || 0})}
-                    placeholder="0.00"
-                  />
+                  <Input id="price" type="number" step="0.01" value={newProduct.price} onChange={(e) => setNewProduct({...newProduct, price: parseFloat(e.target.value) || 0})} placeholder="0.00" />
                 </div>
-                
                 <div>
                   <Label htmlFor="category">Categoría</Label>
-                  <Select
-                    value={newProduct.category}
-                    onValueChange={(value) => setNewProduct({...newProduct, category: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona categoría" />
-                    </SelectTrigger>
+                  <Select value={newProduct.category} onValueChange={(value) => setNewProduct({...newProduct, category: value})}>
+                    <SelectTrigger><SelectValue placeholder="Selecciona categoría" /></SelectTrigger>
                     <SelectContent>
-                      {categories.map(cat => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                      ))}
+                      {categories.map(cat => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
                     </SelectContent>
                   </Select>
                 </div>
-                
                 <div>
                   <Label htmlFor="unit">Unidad de Medida</Label>
-                  <Select
-                    value={newProduct.unit}
-                    onValueChange={(value) => setNewProduct({...newProduct, unit: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona unidad" />
-                    </SelectTrigger>
+                  <Select value={newProduct.unit} onValueChange={(value) => setNewProduct({...newProduct, unit: value})}>
+                    <SelectTrigger><SelectValue placeholder="Selecciona unidad" /></SelectTrigger>
                     <SelectContent>
-                      {units.map(unit => (
-                        <SelectItem key={unit} value={unit}>{unit}</SelectItem>
-                      ))}
+                      {units.map(unit => (<SelectItem key={unit} value={unit}>{unit}</SelectItem>))}
                     </SelectContent>
                   </Select>
                 </div>
-                
                 <div>
                   <Label htmlFor="stock">Cantidad en Inventario</Label>
-                  <Input
-                    id="stock"
-                    type="number"
-                    value={newProduct.stock}
-                    onChange={(e) => setNewProduct({...newProduct, stock: parseInt(e.target.value) || 0})}
-                    placeholder="0"
-                  />
+                  <Input id="stock" type="number" value={newProduct.stock} onChange={(e) => setNewProduct({...newProduct, stock: parseInt(e.target.value) || 0})} placeholder="0" />
                 </div>
-                
                 <Button onClick={handleSaveProduct} className="w-full">
                   {editingProduct ? 'Actualizar' : 'Crear'} Producto
                 </Button>
@@ -240,22 +152,15 @@ const Products = ({ userRole }: ProductsProps) => {
         )}
       </div>
 
-      {/* Search */}
       <Card>
         <CardContent className="p-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Buscar por nombre o código..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+            <Input placeholder="Buscar por nombre o código..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
           </div>
         </CardContent>
       </Card>
 
-      {/* Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredProducts.map((product) => (
           <Card key={product.id} className="hover:shadow-lg transition-shadow">
@@ -267,19 +172,10 @@ const Products = ({ userRole }: ProductsProps) => {
                 </div>
                 {userRole === 'admin' && (
                   <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEditProduct(product)}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => handleEditProduct(product)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteProduct(product.id)}
-                      className="text-red-600 hover:text-red-700"
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => handleDeleteProduct(product.id)} className="text-red-600 hover:text-red-700">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -292,17 +188,14 @@ const Products = ({ userRole }: ProductsProps) => {
                   <span className="text-sm text-gray-600">Precio:</span>
                   <span className="font-semibold text-green-600">${product.price.toFixed(2)}</span>
                 </div>
-                
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Categoría:</span>
                   <Badge variant="secondary">{product.category}</Badge>
                 </div>
-                
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Unidad:</span>
                   <span className="text-sm">{product.unit}</span>
                 </div>
-                
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600">Stock:</span>
                   <Badge className={getStockBadgeColor(product.stock)}>

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Search, Plus, Minus, Trash2, FileText, Printer } from 'lucide-react';
+import PaymentSection, { type PaymentResult } from '@/components/PaymentSection';
 import type { Product } from '@/pages/Index';
 
 interface CartItem extends Product {
@@ -25,7 +26,7 @@ const Billing = ({ products }: BillingProps) => {
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [discount, setDiscount] = useState(0);
-  const [amountPaid, setAmountPaid] = useState(0);
+  const [lastPayment, setLastPayment] = useState<PaymentResult | null>(null);
 
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -34,7 +35,6 @@ const Billing = ({ products }: BillingProps) => {
 
   const addToCart = (product: Product) => {
     const existingItem = cart.find(item => item.id === product.id);
-    
     if (existingItem) {
       if (existingItem.quantity >= product.stock) {
         toast({ title: "Stock insuficiente", description: `Solo quedan ${product.stock} unidades disponibles`, variant: "destructive" });
@@ -48,7 +48,6 @@ const Billing = ({ products }: BillingProps) => {
     } else {
       setCart([...cart, { ...product, quantity: 1, subtotal: product.price }]);
     }
-    
     toast({ title: "Producto agregado", description: `${product.name} agregado al carrito` });
   };
 
@@ -67,34 +66,39 @@ const Billing = ({ products }: BillingProps) => {
   const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
   const discountAmount = (subtotal * discount) / 100;
   const tax = (subtotal - discountAmount) * 0.15;
-  const total = subtotal - discountAmount + tax;
+  const total = Math.round((subtotal - discountAmount + tax) * 100) / 100;
 
-  const generateInvoice = () => {
-    if (cart.length === 0) {
-      toast({ title: "Carrito vacío", description: "Agrega productos antes de generar la factura", variant: "destructive" });
-      return;
-    }
+  const handlePayment = (result: PaymentResult) => {
+    if (cart.length === 0) return;
     const invoiceNumber = `FAC-${Date.now()}`;
-    toast({ title: "Factura generada", description: `Factura ${invoiceNumber} creada exitosamente` });
+    setLastPayment(result);
+
+    const methodLabel = result.paymentType === 'split' ? 'Pago Dividido' : result.paymentType === 'card' ? 'Tarjeta' : 'Efectivo';
+
+    toast({
+      title: "Factura generada",
+      description: `${invoiceNumber} — ${methodLabel}${result.changeAmount > 0 ? ` | Cambio: $${result.changeAmount.toFixed(2)}` : ''}`,
+    });
+
     setCart([]);
     setCustomerName('');
     setCustomerEmail('');
     setDiscount(0);
-    setAmountPaid(0);
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Products panel */}
       <div className="lg:col-span-2 space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Sistema de Facturación</h1>
-          <p className="text-gray-600">Selecciona productos del supermercado</p>
+          <h1 className="text-3xl font-bold text-foreground">Sistema de Facturación</h1>
+          <p className="text-muted-foreground">Selecciona productos del supermercado</p>
         </div>
 
         <Card>
           <CardContent className="p-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input placeholder="Buscar productos por nombre o código..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
             </div>
           </CardContent>
@@ -106,8 +110,8 @@ const Billing = ({ products }: BillingProps) => {
               <CardContent className="p-4">
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className="font-semibold text-gray-900">{product.name}</h3>
-                    <p className="text-sm text-gray-600">Código: {product.code}</p>
+                    <h3 className="font-semibold text-foreground">{product.name}</h3>
+                    <p className="text-sm text-muted-foreground">Código: {product.code}</p>
                   </div>
                   <Badge variant="secondary">{product.stock} disponibles</Badge>
                 </div>
@@ -123,6 +127,7 @@ const Billing = ({ products }: BillingProps) => {
         </div>
       </div>
 
+      {/* Sidebar */}
       <div className="space-y-6">
         <Card>
           <CardHeader><CardTitle>Información del Cliente</CardTitle></CardHeader>
@@ -142,20 +147,20 @@ const Billing = ({ products }: BillingProps) => {
           <CardHeader><CardTitle>Carrito de Compras</CardTitle></CardHeader>
           <CardContent>
             {cart.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">El carrito está vacío</p>
+              <p className="text-muted-foreground text-center py-4">El carrito está vacío</p>
             ) : (
               <div className="space-y-4">
                 {cart.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={item.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div className="flex-1">
                       <h4 className="font-medium text-sm">{item.name}</h4>
-                      <p className="text-xs text-gray-600">${item.price.toFixed(2)} c/u</p>
+                      <p className="text-xs text-muted-foreground">${item.price.toFixed(2)} c/u</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button variant="outline" size="sm" onClick={() => updateQuantity(item.id, item.quantity - 1)}><Minus className="h-3 w-3" /></Button>
                       <span className="w-8 text-center text-sm">{item.quantity}</span>
                       <Button variant="outline" size="sm" onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus className="h-3 w-3" /></Button>
-                      <Button variant="ghost" size="sm" onClick={() => removeFromCart(item.id)} className="text-red-600 hover:text-red-700"><Trash2 className="h-3 w-3" /></Button>
+                      <Button variant="ghost" size="sm" onClick={() => removeFromCart(item.id)} className="text-destructive hover:text-destructive/80"><Trash2 className="h-3 w-3" /></Button>
                     </div>
                     <div className="w-20 text-right">
                       <span className="font-semibold">${item.subtotal.toFixed(2)}</span>
@@ -184,42 +189,42 @@ const Billing = ({ products }: BillingProps) => {
               <Separator />
               <div className="flex justify-between text-lg font-bold"><span>Total:</span><span>${total.toFixed(2)}</span></div>
             </div>
-
-            <Separator />
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="amountPaid" className="text-sm font-semibold">Paga con:</Label>
-                <div className="relative mt-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
-                  <Input id="amountPaid" type="number" min="0" step="0.01" value={amountPaid || ''} onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)} placeholder="0.00" className="pl-7 text-lg font-semibold" />
-                </div>
-              </div>
-              {total > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {[Math.ceil(total), Math.ceil(total / 5) * 5, Math.ceil(total / 10) * 10, Math.ceil(total / 20) * 20].filter((v, i, a) => v >= total && a.indexOf(v) === i).slice(0, 4).map((amount) => (
-                    <Button key={amount} variant="outline" size="sm" className="text-xs" onClick={() => setAmountPaid(amount)}>${amount.toFixed(2)}</Button>
-                  ))}
-                </div>
-              )}
-              <div className={`p-3 rounded-lg text-center ${amountPaid >= total && amountPaid > 0 ? 'bg-green-50 border border-green-200' : amountPaid > 0 ? 'bg-red-50 border border-red-200' : 'bg-gray-50 border border-gray-200'}`}>
-                <p className="text-xs text-gray-500 uppercase font-medium">Cambio</p>
-                <p className={`text-2xl font-bold ${amountPaid >= total && amountPaid > 0 ? 'text-green-600' : amountPaid > 0 ? 'text-red-600' : 'text-gray-400'}`}>
-                  ${amountPaid > 0 ? (amountPaid - total).toFixed(2) : '0.00'}
-                </p>
-                {amountPaid > 0 && amountPaid < total && (<p className="text-xs text-red-500 mt-1">Monto insuficiente</p>)}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Button onClick={generateInvoice} className="w-full" disabled={cart.length === 0}>
-                <FileText className="h-4 w-4 mr-2" /> Generar Factura
-              </Button>
-              <Button variant="outline" className="w-full" disabled={cart.length === 0}>
-                <Printer className="h-4 w-4 mr-2" /> Imprimir
-              </Button>
-            </div>
           </CardContent>
         </Card>
+
+        {/* Payment Section */}
+        <PaymentSection total={total} disabled={cart.length === 0} onConfirmPayment={handlePayment} />
+
+        {/* Last payment info */}
+        {lastPayment && (
+          <Card className="border-green-200 bg-green-50">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-green-800">Último Pago Registrado</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1 text-sm text-green-700">
+              <div className="flex justify-between">
+                <span>Tipo:</span>
+                <Badge variant="outline" className="text-green-700 border-green-300">
+                  {lastPayment.paymentType === 'split' ? 'Dividido' : lastPayment.paymentType === 'card' ? 'Tarjeta' : 'Efectivo'}
+                </Badge>
+              </div>
+              {lastPayment.cashReceived > 0 && (
+                <div className="flex justify-between"><span>Efectivo:</span><span>${lastPayment.cashReceived.toFixed(2)}</span></div>
+              )}
+              {lastPayment.cardReceived > 0 && (
+                <div className="flex justify-between"><span>Tarjeta:</span><span>${lastPayment.cardReceived.toFixed(2)}</span></div>
+              )}
+              <div className="flex justify-between font-semibold"><span>Total pagado:</span><span>${lastPayment.totalPaid.toFixed(2)}</span></div>
+              {lastPayment.changeAmount > 0 && (
+                <div className="flex justify-between"><span>Cambio:</span><span>${lastPayment.changeAmount.toFixed(2)}</span></div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        <Button variant="outline" className="w-full" disabled={cart.length === 0}>
+          <Printer className="h-4 w-4 mr-2" /> Imprimir
+        </Button>
       </div>
     </div>
   );

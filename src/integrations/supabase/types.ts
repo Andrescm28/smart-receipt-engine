@@ -586,6 +586,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          supermarket_id: string | null
           updated_at: string
         }
         Insert: {
@@ -593,6 +594,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          supermarket_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -600,6 +602,45 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          supermarket_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_supermarket_id_fkey"
+            columns: ["supermarket_id"]
+            isOneToOne: false
+            referencedRelation: "supermarkets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supermarkets: {
+        Row: {
+          active: boolean
+          address: string | null
+          created_at: string
+          id: string
+          name: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          address?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          address?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string | null
           updated_at?: string
         }
         Relationships: []

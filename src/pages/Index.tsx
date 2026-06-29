@@ -71,6 +71,7 @@ const Index = () => {
         <Route path="/billing" element={<Billing products={products} />} />
         <Route path="/reports" element={<Reports />} />
         {userRole === 'admin' && <Route path="/users" element={<Users />} />}
+        {userRole === 'admin' && <Route path="/emisor" element={<EmisorConfig />} />}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

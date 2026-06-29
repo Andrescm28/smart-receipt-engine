@@ -1,220 +1,161 @@
-
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Calculator, Printer, DollarSign, Clock } from 'lucide-react';
+import { Calculator, DollarSign, Clock } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface CashCutProps {
   onClose: () => void;
 }
 
+const denominations = [
+  { key: 'b20000', label: '₡20,000', value: 20000 },
+  { key: 'b10000', label: '₡10,000', value: 10000 },
+  { key: 'b5000', label: '₡5,000', value: 5000 },
+  { key: 'b2000', label: '₡2,000', value: 2000 },
+  { key: 'b1000', label: '₡1,000', value: 1000 },
+  { key: 'c500', label: '₡500', value: 500 },
+  { key: 'c100', label: '₡100', value: 100 },
+  { key: 'c50', label: '₡50', value: 50 },
+  { key: 'c25', label: '₡25', value: 25 },
+];
+
 const CashCut = ({ onClose }: CashCutProps) => {
   const { toast } = useToast();
-  const [cashCount, setCashCount] = useState({
-    bills1000: 0,
-    bills500: 0,
-    bills200: 0,
-    bills100: 0,
-    bills50: 0,
-    bills20: 0,
-    bills10: 0,
-    coins5: 0,
-    coins1: 0,
-    coins050: 0,
-    coins025: 0
-  });
+  const { user } = useAuth();
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [sales, setSales] = useState({ cash: 0, card: 0, total: 0, count: 0 });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  // Datos simulados de ventas del día
-  const salesData = {
-    totalSales: 15450.75,
-    totalTransactions: 87,
-    cashSales: 8320.50,
-    cardSales: 7130.25,
-    startingCash: 1000.00
-  };
+  useEffect(() => {
+    const load = async () => {
+      if (!user) return;
+      // Find last cash cut for this cashier
+      const { data: lastCut } = await supabase
+        .from('cash_cuts')
+        .select('closed_at')
+        .eq('cashier_id', user.id)
+        .order('closed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-  const denominations = [
-    { key: 'bills1000', label: '$1,000', value: 1000 },
-    { key: 'bills500', label: '$500', value: 500 },
-    { key: 'bills200', label: '$200', value: 200 },
-    { key: 'bills100', label: '$100', value: 100 },
-    { key: 'bills50', label: '$50', value: 50 },
-    { key: 'bills20', label: '$20', value: 20 },
-    { key: 'bills10', label: '$10', value: 10 },
-    { key: 'coins5', label: '$5', value: 5 },
-    { key: 'coins1', label: '$1', value: 1 },
-    { key: 'coins050', label: '$0.50', value: 0.50 },
-    { key: 'coins025', label: '$0.25', value: 0.25 }
-  ];
+      const since = lastCut?.closed_at ?? new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
 
-  const calculateTotal = () => {
-    return denominations.reduce((total, denom) => {
-      return total + (cashCount[denom.key as keyof typeof cashCount] * denom.value);
-    }, 0);
-  };
+      const { data: invoices } = await supabase
+        .from('invoices')
+        .select('id, total, payment_method')
+        .eq('cashier_id', user.id)
+        .eq('status', 'paid')
+        .gte('created_at', since);
 
-  const expectedCash = salesData.startingCash + salesData.cashSales;
-  const actualCash = calculateTotal();
-  const difference = actualCash - expectedCash;
+      const ids = (invoices ?? []).map((i) => i.id);
+      let cash = 0;
+      let card = 0;
+      if (ids.length) {
+        const { data: pays } = await supabase
+          .from('payment_details')
+          .select('method, amount')
+          .in('invoice_id', ids);
+        (pays ?? []).forEach((p: any) => {
+          if (p.method === 'cash') cash += Number(p.amount);
+          else if (p.method === 'card') card += Number(p.amount);
+        });
+      }
+      const total = (invoices ?? []).reduce((s, i: any) => s + Number(i.total), 0);
+      setSales({ cash, card, total, count: invoices?.length ?? 0 });
+      setLoading(false);
+    };
+    load();
+  }, [user]);
 
-  const handleCashCountChange = (key: string, value: string) => {
-    setCashCount(prev => ({
-      ...prev,
-      [key]: parseInt(value) || 0
-    }));
-  };
+  const counted = denominations.reduce((s, d) => s + (counts[d.key] || 0) * d.value, 0);
+  const difference = counted - sales.cash;
 
-  const generateCashCut = () => {
-    const cutNumber = `CORTE-${Date.now()}`;
-    
-    toast({
-      title: "Corte de caja generado",
-      description: `Corte ${cutNumber} registrado exitosamente`,
+  const generate = async () => {
+    if (!user) return;
+    setSaving(true);
+    const { error } = await supabase.from('cash_cuts').insert({
+      cashier_id: user.id,
+      system_cash: sales.cash,
+      system_card: sales.card,
+      system_total: sales.total,
+      counted_cash: counted,
+      difference,
+      invoice_count: sales.count,
+      denominations: counts as any,
     });
-
-    console.log('Corte de caja:', {
-      number: cutNumber,
-      date: new Date().toISOString(),
-      salesData,
-      cashCount,
-      expectedCash,
-      actualCash,
-      difference
-    });
-
+    setSaving(false);
+    if (error) return toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    toast({ title: 'Corte generado', description: `Diferencia: ${difference.toFixed(2)}` });
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Calculator className="h-6 w-6" />
-              Corte de Caja
-            </h2>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Clock className="h-4 w-4" />
-              {new Date().toLocaleString()}
-            </div>
+            <h2 className="text-2xl font-bold flex items-center gap-2"><Calculator className="h-6 w-6" /> Corte de Caja</h2>
+            <div className="flex items-center gap-2 text-sm text-gray-600"><Clock className="h-4 w-4" />{new Date().toLocaleString()}</div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Conteo de Efectivo */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Conteo de Efectivo</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {denominations.map((denom) => (
-                    <div key={denom.key} className="flex items-center justify-between">
-                      <Label className="w-16">{denom.label}</Label>
+          {loading ? <p className="text-center text-gray-500 py-8">Cargando ventas...</p> : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader><CardTitle>Conteo de Efectivo</CardTitle></CardHeader>
+                <CardContent className="space-y-3">
+                  {denominations.map((d) => (
+                    <div key={d.key} className="flex items-center justify-between">
+                      <Label className="w-20">{d.label}</Label>
                       <div className="flex items-center gap-2">
-                        <Input
-                          type="number"
-                          min="0"
-                          value={cashCount[denom.key as keyof typeof cashCount]}
-                          onChange={(e) => handleCashCountChange(denom.key, e.target.value)}
-                          className="w-20 text-center"
-                        />
-                        <span className="w-20 text-right text-sm text-gray-600">
-                          ${(cashCount[denom.key as keyof typeof cashCount] * denom.value).toFixed(2)}
-                        </span>
+                        <Input type="number" min="0" value={counts[d.key] || 0} onChange={(e) => setCounts({ ...counts, [d.key]: parseInt(e.target.value) || 0 })} className="w-20 text-center" />
+                        <span className="w-24 text-right text-sm text-gray-600">{((counts[d.key] || 0) * d.value).toLocaleString()}</span>
                       </div>
                     </div>
                   ))}
-                </div>
-                
-                <Separator className="my-4" />
-                
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Total Contado:</span>
-                  <span>${actualCash.toFixed(2)}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Resumen de Ventas */}
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Resumen de Ventas</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex justify-between">
-                    <span>Total de Ventas:</span>
-                    <span className="font-semibold">${salesData.totalSales.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Transacciones:</span>
-                    <span className="font-semibold">{salesData.totalTransactions}</span>
-                  </div>
                   <Separator />
-                  <div className="flex justify-between">
-                    <span>Ventas en Efectivo:</span>
-                    <span className="font-semibold">${salesData.cashSales.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Ventas con Tarjeta:</span>
-                    <span className="font-semibold">${salesData.cardSales.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Efectivo Inicial:</span>
-                    <span className="font-semibold">${salesData.startingCash.toFixed(2)}</span>
-                  </div>
+                  <div className="flex justify-between text-lg font-bold"><span>Total contado:</span><span>{counted.toLocaleString()}</span></div>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Comparación</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex justify-between">
-                    <span>Efectivo Esperado:</span>
-                    <span className="font-semibold">${expectedCash.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Efectivo Contado:</span>
-                    <span className="font-semibold">${actualCash.toFixed(2)}</span>
-                  </div>
-                  <Separator />
-                  <div className={`flex justify-between text-lg font-bold ${
-                    difference === 0 ? 'text-green-600' : 
-                    difference > 0 ? 'text-blue-600' : 'text-red-600'
-                  }`}>
-                    <span>Diferencia:</span>
-                    <span>
-                      {difference > 0 ? '+' : ''}${difference.toFixed(2)}
-                    </span>
-                  </div>
-                  {difference !== 0 && (
-                    <p className="text-sm text-gray-600">
-                      {difference > 0 ? 'Sobrante en caja' : 'Faltante en caja'}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader><CardTitle>Ventas del Turno</CardTitle></CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between"><span>Transacciones:</span><span className="font-semibold">{sales.count}</span></div>
+                    <div className="flex justify-between"><span>Total ventas:</span><span className="font-semibold">{sales.total.toFixed(2)}</span></div>
+                    <Separator />
+                    <div className="flex justify-between"><span>Efectivo:</span><span className="font-semibold">{sales.cash.toFixed(2)}</span></div>
+                    <div className="flex justify-between"><span>Tarjeta:</span><span className="font-semibold">{sales.card.toFixed(2)}</span></div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader><CardTitle>Comparación</CardTitle></CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between"><span>Esperado en caja:</span><span className="font-semibold">{sales.cash.toFixed(2)}</span></div>
+                    <div className="flex justify-between"><span>Contado:</span><span className="font-semibold">{counted.toFixed(2)}</span></div>
+                    <Separator />
+                    <div className={`flex justify-between text-lg font-bold ${difference === 0 ? 'text-green-600' : difference > 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                      <span>Diferencia:</span>
+                      <span>{difference > 0 ? '+' : ''}{difference.toFixed(2)}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="flex justify-end gap-3 mt-6">
-            <Button variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button onClick={generateCashCut} className="bg-orange-600 hover:bg-orange-700">
-              <DollarSign className="h-4 w-4 mr-2" />
-              Generar Corte
-            </Button>
-            <Button variant="outline">
-              <Printer className="h-4 w-4 mr-2" />
-              Imprimir
+            <Button variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button onClick={generate} disabled={saving || loading} className="bg-orange-600 hover:bg-orange-700">
+              <DollarSign className="h-4 w-4 mr-2" /> {saving ? 'Guardando...' : 'Generar Corte'}
             </Button>
           </div>
         </div>

@@ -9,6 +9,7 @@ import Users from "@/components/Users";
 import Login from "@/components/Login";
 import CashierLayout from "@/components/CashierLayout";
 import CashCut from "@/components/CashCut";
+import EmisorConfig from "@/components/EmisorConfig";
 
 export interface Product {
   id: string;
@@ -70,6 +71,7 @@ const Index = () => {
         <Route path="/billing" element={<Billing products={products} />} />
         <Route path="/reports" element={<Reports />} />
         {userRole === 'admin' && <Route path="/users" element={<Users />} />}
+        {userRole === 'admin' && <Route path="/emisor" element={<EmisorConfig />} />}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

@@ -9,6 +9,7 @@ import Users from "@/components/Users";
 import Login from "@/components/Login";
 import CashierLayout from "@/components/CashierLayout";
 import CashCut from "@/components/CashCut";
+import EmisorConfig from "@/components/EmisorConfig";
 
 export interface Product {
   id: string;

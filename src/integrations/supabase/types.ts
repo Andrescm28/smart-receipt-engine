@@ -14,7 +14,230 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      comprobantes_electronicos: {
+        Row: {
+          clave_numerica: string | null
+          consecutivo: string
+          created_at: string
+          created_by: string | null
+          descuento_total: number
+          estado: string
+          fecha_emision: string
+          gti_respuesta: Json | null
+          hacienda_mensaje: string | null
+          id: string
+          impuesto_total: number
+          intentos: number
+          moneda: string
+          numero_factura_interno: string
+          payload_solicitud: Json | null
+          pdf_url: string | null
+          proximo_intento_at: string | null
+          receptor_correo: string | null
+          receptor_identificacion: string | null
+          receptor_nombre: string | null
+          receptor_tipo_id: string | null
+          subtotal: number
+          tipo_cambio: number | null
+          tipo_comprobante: string
+          total: number
+          ultimo_intento_at: string | null
+          updated_at: string
+          xml_firmado: string | null
+        }
+        Insert: {
+          clave_numerica?: string | null
+          consecutivo: string
+          created_at?: string
+          created_by?: string | null
+          descuento_total?: number
+          estado?: string
+          fecha_emision?: string
+          gti_respuesta?: Json | null
+          hacienda_mensaje?: string | null
+          id?: string
+          impuesto_total?: number
+          intentos?: number
+          moneda?: string
+          numero_factura_interno: string
+          payload_solicitud?: Json | null
+          pdf_url?: string | null
+          proximo_intento_at?: string | null
+          receptor_correo?: string | null
+          receptor_identificacion?: string | null
+          receptor_nombre?: string | null
+          receptor_tipo_id?: string | null
+          subtotal?: number
+          tipo_cambio?: number | null
+          tipo_comprobante: string
+          total?: number
+          ultimo_intento_at?: string | null
+          updated_at?: string
+          xml_firmado?: string | null
+        }
+        Update: {
+          clave_numerica?: string | null
+          consecutivo?: string
+          created_at?: string
+          created_by?: string | null
+          descuento_total?: number
+          estado?: string
+          fecha_emision?: string
+          gti_respuesta?: Json | null
+          hacienda_mensaje?: string | null
+          id?: string
+          impuesto_total?: number
+          intentos?: number
+          moneda?: string
+          numero_factura_interno?: string
+          payload_solicitud?: Json | null
+          pdf_url?: string | null
+          proximo_intento_at?: string | null
+          receptor_correo?: string | null
+          receptor_identificacion?: string | null
+          receptor_nombre?: string | null
+          receptor_tipo_id?: string | null
+          subtotal?: number
+          tipo_cambio?: number | null
+          tipo_comprobante?: string
+          total?: number
+          ultimo_intento_at?: string | null
+          updated_at?: string
+          xml_firmado?: string | null
+        }
+        Relationships: []
+      }
+      comprobantes_logs: {
+        Row: {
+          accion: string
+          comprobante_id: string | null
+          created_at: string
+          estado_resultado: string | null
+          http_status: number | null
+          id: string
+          mensaje: string | null
+          request_payload: Json | null
+          response_payload: Json | null
+        }
+        Insert: {
+          accion: string
+          comprobante_id?: string | null
+          created_at?: string
+          estado_resultado?: string | null
+          http_status?: number | null
+          id?: string
+          mensaje?: string | null
+          request_payload?: Json | null
+          response_payload?: Json | null
+        }
+        Update: {
+          accion?: string
+          comprobante_id?: string | null
+          created_at?: string
+          estado_resultado?: string | null
+          http_status?: number | null
+          id?: string
+          mensaje?: string | null
+          request_payload?: Json | null
+          response_payload?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comprobantes_logs_comprobante_id_fkey"
+            columns: ["comprobante_id"]
+            isOneToOne: false
+            referencedRelation: "comprobantes_electronicos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      emisor_config: {
+        Row: {
+          actividad_economica: string
+          activo: boolean
+          ambiente: string
+          barrio: string | null
+          canton: string
+          cedula_numero: string
+          cedula_tipo: string
+          certificado_cargado: boolean
+          consecutivo_factura: number
+          consecutivo_nota_credito: number
+          consecutivo_tiquete: number
+          correo_electronico: string
+          created_at: string
+          distrito: string
+          gti_api_url: string | null
+          gti_usuario: string | null
+          id: string
+          nombre_comercial: string | null
+          otras_senas: string | null
+          provincia: string
+          razon_social: string
+          sucursal: string
+          telefono: string | null
+          telefono_codigo_pais: string | null
+          terminal: string
+          updated_at: string
+        }
+        Insert: {
+          actividad_economica: string
+          activo?: boolean
+          ambiente?: string
+          barrio?: string | null
+          canton: string
+          cedula_numero: string
+          cedula_tipo?: string
+          certificado_cargado?: boolean
+          consecutivo_factura?: number
+          consecutivo_nota_credito?: number
+          consecutivo_tiquete?: number
+          correo_electronico: string
+          created_at?: string
+          distrito: string
+          gti_api_url?: string | null
+          gti_usuario?: string | null
+          id?: string
+          nombre_comercial?: string | null
+          otras_senas?: string | null
+          provincia: string
+          razon_social: string
+          sucursal?: string
+          telefono?: string | null
+          telefono_codigo_pais?: string | null
+          terminal?: string
+          updated_at?: string
+        }
+        Update: {
+          actividad_economica?: string
+          activo?: boolean
+          ambiente?: string
+          barrio?: string | null
+          canton?: string
+          cedula_numero?: string
+          cedula_tipo?: string
+          certificado_cargado?: boolean
+          consecutivo_factura?: number
+          consecutivo_nota_credito?: number
+          consecutivo_tiquete?: number
+          correo_electronico?: string
+          created_at?: string
+          distrito?: string
+          gti_api_url?: string | null
+          gti_usuario?: string | null
+          id?: string
+          nombre_comercial?: string | null
+          otras_senas?: string | null
+          provincia?: string
+          razon_social?: string
+          sucursal?: string
+          telefono?: string | null
+          telefono_codigo_pais?: string | null
+          terminal?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

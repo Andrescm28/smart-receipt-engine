@@ -2,10 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Search, User } from 'lucide-react';
+import { Search, User, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 interface UserRow {
   id: string;
@@ -13,25 +16,38 @@ interface UserRow {
   email: string | null;
   roles: ('admin' | 'cashier')[];
   created_at: string;
+  supermarket_id: string | null;
 }
+
+interface Supermarket { id: string; name: string }
 
 const Users = () => {
   const { toast } = useToast();
   const [users, setUsers] = useState<UserRow[]>([]);
+  const [supermarkets, setSupermarkets] = useState<Supermarket[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    full_name: '',
+    email: '',
+    password: '',
+    role: 'cashier' as 'admin' | 'cashier',
+    supermarket_id: '',
+  });
 
   const load = async () => {
     setLoading(true);
-    const [{ data: profiles }, { data: roles }] = await Promise.all([
+    const [{ data: profiles }, { data: roles }, { data: sms }] = await Promise.all([
       supabase.from('profiles').select('*').order('created_at', { ascending: false }),
       supabase.from('user_roles').select('user_id, role'),
+      supabase.from('supermarkets').select('id, name').order('name'),
     ]);
     const byUser: Record<string, ('admin' | 'cashier')[]> = {};
-    (roles ?? []).forEach((r: any) => {
-      byUser[r.user_id] = [...(byUser[r.user_id] ?? []), r.role];
-    });
+    (roles ?? []).forEach((r: any) => { byUser[r.user_id] = [...(byUser[r.user_id] ?? []), r.role]; });
     setUsers((profiles ?? []).map((p: any) => ({ ...p, roles: byUser[p.id] ?? [] })));
+    setSupermarkets((sms as Supermarket[]) ?? []);
     setLoading(false);
   };
 
@@ -50,19 +66,90 @@ const Users = () => {
     load();
   };
 
-  const filtered = users.filter(
-    (u) =>
-      (u.full_name ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (u.email ?? '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const updateSupermarket = async (userId: string, supermarket_id: string) => {
+    const { error } = await supabase.from('profiles').update({ supermarket_id: supermarket_id || null }).eq('id', userId);
+    if (error) return toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    toast({ title: 'Supermercado actualizado' });
+    load();
+  };
 
+  const createUser = async () => {
+    if (!form.full_name || !form.email || !form.password) {
+      return toast({ title: 'Completa todos los campos', variant: 'destructive' });
+    }
+    setSaving(true);
+    const { data, error } = await supabase.functions.invoke('admin-create-user', {
+      body: {
+        full_name: form.full_name,
+        email: form.email,
+        password: form.password,
+        role: form.role,
+        supermarket_id: form.supermarket_id || null,
+      },
+    });
+    setSaving(false);
+    if (error || (data as any)?.error) {
+      return toast({ title: 'Error', description: (data as any)?.error ?? error?.message, variant: 'destructive' });
+    }
+    toast({ title: 'Usuario creado correctamente' });
+    setOpen(false);
+    setForm({ full_name: '', email: '', password: '', role: 'cashier', supermarket_id: '' });
+    load();
+  };
+
+  const filtered = users.filter(
+    (u) => (u.full_name ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+           (u.email ?? '').toLowerCase().includes(searchTerm.toLowerCase())
+  );
   const isAdmin = (u: UserRow) => u.roles.includes('admin');
+  const smName = (id: string | null) => supermarkets.find((s) => s.id === id)?.name ?? '—';
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
-        <p className="text-gray-600">Administra los usuarios del sistema. Los nuevos usuarios se registran desde la pantalla de inicio de sesión.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
+          <p className="text-gray-600">Crea y administra al personal de cada supermercado.</p>
+        </div>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button><Plus className="h-4 w-4 mr-2" /> Nuevo usuario</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Crear usuario</DialogTitle></DialogHeader>
+            <div className="space-y-3">
+              <div><Label>Nombre completo</Label><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></div>
+              <div><Label>Correo</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
+              <div><Label>Contraseña (mín. 6)</Label><Input type="password" minLength={6} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} /></div>
+              <div>
+                <Label>Rol</Label>
+                <Select value={form.role} onValueChange={(v: 'admin' | 'cashier') => setForm({ ...form, role: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Administrador</SelectItem>
+                    <SelectItem value="cashier">Cajero/Cajera</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Supermercado asignado</Label>
+                <Select value={form.supermarket_id} onValueChange={(v) => setForm({ ...form, supermarket_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Seleccione una sucursal" /></SelectTrigger>
+                  <SelectContent>
+                    {supermarkets.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                {supermarkets.length === 0 && (
+                  <p className="text-xs text-amber-600 mt-1">Primero registra un supermercado en el módulo correspondiente.</p>
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+              <Button onClick={createUser} disabled={saving}>{saving ? 'Creando...' : 'Crear'}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card>
@@ -85,7 +172,7 @@ const Users = () => {
                     <th className="text-left p-4 font-medium text-gray-600">Usuario</th>
                     <th className="text-left p-4 font-medium text-gray-600">Email</th>
                     <th className="text-left p-4 font-medium text-gray-600">Rol</th>
-                    <th className="text-left p-4 font-medium text-gray-600">Creado</th>
+                    <th className="text-left p-4 font-medium text-gray-600">Supermercado</th>
                     <th className="text-left p-4 font-medium text-gray-600">Acciones</th>
                   </tr>
                 </thead>
@@ -106,7 +193,14 @@ const Users = () => {
                           {isAdmin(u) ? 'Administrador' : 'Cajero'}
                         </Badge>
                       </td>
-                      <td className="p-4 text-sm text-gray-600">{new Date(u.created_at).toLocaleDateString()}</td>
+                      <td className="p-4 text-sm">
+                        <Select value={u.supermarket_id ?? ''} onValueChange={(v) => updateSupermarket(u.id, v)}>
+                          <SelectTrigger className="w-48"><SelectValue placeholder={smName(u.supermarket_id)} /></SelectTrigger>
+                          <SelectContent>
+                            {supermarkets.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </td>
                       <td className="p-4">
                         <Button variant="outline" size="sm" onClick={() => toggleAdmin(u.id, isAdmin(u))}>
                           {isAdmin(u) ? 'Quitar Admin' : 'Hacer Admin'}

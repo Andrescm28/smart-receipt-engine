@@ -10,6 +10,7 @@ import Login from "@/components/Login";
 import CashierLayout from "@/components/CashierLayout";
 import CashCut from "@/components/CashCut";
 import EmisorConfig from "@/components/EmisorConfig";
+import Supermarkets from "@/components/Supermarkets";
 import { useAuth } from "@/hooks/useAuth";
 
 export interface Product {
@@ -62,6 +63,7 @@ const Index = () => {
         <Route path="/billing" element={<Billing />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/users" element={<Users />} />
+        <Route path="/supermarkets" element={<Supermarkets />} />
         <Route path="/emisor" element={<EmisorConfig />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

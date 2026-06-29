@@ -1,286 +1,175 @@
-
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { Calendar, Download, TrendingUp, DollarSign, Package, Users } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { supabase } from '@/integrations/supabase/client';
+
+const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
 
 const Reports = () => {
-  const [dateRange, setDateRange] = useState('week');
-  const [reportType, setReportType] = useState('sales');
+  const [dateRange, setDateRange] = useState<'today' | 'week' | 'month'>('week');
+  const [byDay, setByDay] = useState<{ name: string; ventas: number; facturas: number }[]>([]);
+  const [byCategory, setByCategory] = useState<{ name: string; value: number }[]>([]);
+  const [topProducts, setTopProducts] = useState<{ name: string; sold: number; revenue: number }[]>([]);
+  const [byCashier, setByCashier] = useState<{ name: string; total: number; count: number }[]>([]);
 
-  // Demo data
-  const salesData = [
-    { name: 'Lun', ventas: 4000, facturas: 45 },
-    { name: 'Mar', ventas: 3000, facturas: 38 },
-    { name: 'Mié', ventas: 5000, facturas: 62 },
-    { name: 'Jue', ventas: 2780, facturas: 35 },
-    { name: 'Vie', ventas: 6890, facturas: 78 },
-    { name: 'Sáb', ventas: 8390, facturas: 95 },
-    { name: 'Dom', ventas: 3490, facturas: 42 },
-  ];
+  useEffect(() => {
+    const load = async () => {
+      const since = new Date();
+      if (dateRange === 'today') since.setHours(0, 0, 0, 0);
+      else if (dateRange === 'week') since.setDate(since.getDate() - 7);
+      else since.setMonth(since.getMonth() - 1);
 
-  const productSalesData = [
-    { name: 'Bebidas', value: 28, color: '#3B82F6' },
-    { name: 'Lácteos', value: 22, color: '#10B981' },
-    { name: 'Carnes', value: 18, color: '#F59E0B' },
-    { name: 'Granos', value: 17, color: '#EF4444' },
-    { name: 'Otros', value: 15, color: '#8B5CF6' },
-  ];
+      const [{ data: invoices }, { data: items }, { data: profiles }] = await Promise.all([
+        supabase.from('invoices').select('id, total, created_at, cashier_id').eq('status', 'paid').gte('created_at', since.toISOString()),
+        supabase.from('invoice_items').select('product_name, quantity, line_total, created_at').gte('created_at', since.toISOString()),
+        supabase.from('profiles').select('id, full_name, email'),
+      ]);
 
-  const topProducts = [
-    { name: 'Coca Cola 500ml', sold: 285, revenue: 356 },
-    { name: 'Pan Blanco Molde', sold: 247, revenue: 618 },
-    { name: 'Leche Entera 1L', sold: 198, revenue: 634 },
-    { name: 'Arroz Blanco 1kg', sold: 156, revenue: 296 },
-    { name: 'Pechuga de Pollo 1kg', sold: 134, revenue: 737 },
-  ];
+      // By day
+      const dayMap: Record<string, { ventas: number; facturas: number }> = {};
+      (invoices ?? []).forEach((i: any) => {
+        const k = new Date(i.created_at).toLocaleDateString();
+        if (!dayMap[k]) dayMap[k] = { ventas: 0, facturas: 0 };
+        dayMap[k].ventas += Number(i.total);
+        dayMap[k].facturas += 1;
+      });
+      setByDay(Object.entries(dayMap).map(([name, v]) => ({ name, ...v })));
 
-  const userSales = [
-    { user: 'Ana García', sales: 25780, invoices: 89 },
-    { user: 'Carlos López', sales: 19650, invoices: 67 },
-    { user: 'María Rodríguez', sales: 15430, invoices: 52 },
-    { user: 'Juan Pérez', sales: 12340, invoices: 41 },
-  ];
+      // Top products + by name aggregated
+      const prodMap: Record<string, { sold: number; revenue: number }> = {};
+      (items ?? []).forEach((it: any) => {
+        if (!prodMap[it.product_name]) prodMap[it.product_name] = { sold: 0, revenue: 0 };
+        prodMap[it.product_name].sold += Number(it.quantity);
+        prodMap[it.product_name].revenue += Number(it.line_total);
+      });
+      const top = Object.entries(prodMap)
+        .map(([name, v]) => ({ name, ...v }))
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 10);
+      setTopProducts(top);
 
-  const monthlyGrowth = [
-    { month: 'Ene', sales: 45000, growth: 5.2 },
-    { month: 'Feb', sales: 52000, growth: 15.6 },
-    { month: 'Mar', sales: 48000, growth: -7.7 },
-    { month: 'Abr', sales: 61000, growth: 27.1 },
-    { month: 'May', sales: 55000, growth: -9.8 },
-    { month: 'Jun', sales: 67000, growth: 21.8 },
-  ];
+      // By category — need category from products
+      const { data: prods } = await supabase.from('products').select('name, category');
+      const catByName: Record<string, string> = {};
+      (prods ?? []).forEach((p: any) => { catByName[p.name] = p.category ?? 'Otros'; });
+      const catMap: Record<string, number> = {};
+      (items ?? []).forEach((it: any) => {
+        const c = catByName[it.product_name] ?? 'Otros';
+        catMap[c] = (catMap[c] ?? 0) + Number(it.line_total);
+      });
+      setByCategory(Object.entries(catMap).map(([name, value]) => ({ name, value: Math.round(value * 100) / 100 })));
 
-  const exportReport = (format: 'pdf' | 'excel') => {
-    console.log(`Exportando reporte en formato ${format}`);
-    // Aquí se implementaría la lógica de exportación
-  };
+      // By cashier
+      const profMap: Record<string, string> = {};
+      (profiles ?? []).forEach((p: any) => { profMap[p.id] = p.full_name || p.email || p.id.slice(0, 8); });
+      const cashMap: Record<string, { total: number; count: number }> = {};
+      (invoices ?? []).forEach((i: any) => {
+        const n = profMap[i.cashier_id] ?? 'Desconocido';
+        if (!cashMap[n]) cashMap[n] = { total: 0, count: 0 };
+        cashMap[n].total += Number(i.total);
+        cashMap[n].count += 1;
+      });
+      setByCashier(Object.entries(cashMap).map(([name, v]) => ({ name, ...v })));
+    };
+    load();
+  }, [dateRange]);
+
+  const totalRevenue = byDay.reduce((s, d) => s + d.ventas, 0);
+  const totalInvoices = byDay.reduce((s, d) => s + d.facturas, 0);
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Reportes e Insights</h1>
-          <p className="text-gray-600">Análisis detallado de ventas y rendimiento</p>
+          <h1 className="text-3xl font-bold text-gray-900">Reportes</h1>
+          <p className="text-gray-600">Análisis de ventas y rendimiento</p>
         </div>
-        
-        <div className="flex gap-3">
-          <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="day">Hoy</SelectItem>
-              <SelectItem value="week">Esta Semana</SelectItem>
-              <SelectItem value="month">Este Mes</SelectItem>
-              <SelectItem value="year">Este Año</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Button variant="outline" onClick={() => exportReport('pdf')}>
-            <Download className="h-4 w-4 mr-2" />
-            PDF
-          </Button>
-          
-          <Button variant="outline" onClick={() => exportReport('excel')}>
-            <Download className="h-4 w-4 mr-2" />
-            Excel
-          </Button>
-        </div>
+        <Select value={dateRange} onValueChange={(v: any) => setDateRange(v)}>
+          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="today">Hoy</SelectItem>
+            <SelectItem value="week">Última semana</SelectItem>
+            <SelectItem value="month">Último mes</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Ventas Totales</p>
-                <p className="text-2xl font-bold text-gray-900">$67,420</p>
-                <p className="text-sm text-green-600">+12.5% vs período anterior</p>
-              </div>
-              <div className="p-3 rounded-full bg-green-50">
-                <DollarSign className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Facturas Emitidas</p>
-                <p className="text-2xl font-bold text-gray-900">395</p>
-                <p className="text-sm text-blue-600">+8.2% vs período anterior</p>
-              </div>
-              <div className="p-3 rounded-full bg-blue-50">
-                <Calendar className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Productos Vendidos</p>
-                <p className="text-2xl font-bold text-gray-900">1,284</p>
-                <p className="text-sm text-purple-600">+15.3% vs período anterior</p>
-              </div>
-              <div className="p-3 rounded-full bg-purple-50">
-                <Package className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Ticket Promedio</p>
-                <p className="text-2xl font-bold text-gray-900">$170.68</p>
-                <p className="text-sm text-orange-600">+3.8% vs período anterior</p>
-              </div>
-              <div className="p-3 rounded-full bg-orange-50">
-                <TrendingUp className="h-6 w-6 text-orange-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card><CardContent className="p-6"><p className="text-sm text-gray-600">Ingresos totales</p><p className="text-2xl font-bold text-green-600">${totalRevenue.toFixed(2)}</p></CardContent></Card>
+        <Card><CardContent className="p-6"><p className="text-sm text-gray-600">Facturas</p><p className="text-2xl font-bold text-blue-600">{totalInvoices}</p></CardContent></Card>
+        <Card><CardContent className="p-6"><p className="text-sm text-gray-600">Ticket promedio</p><p className="text-2xl font-bold text-purple-600">${totalInvoices ? (totalRevenue / totalInvoices).toFixed(2) : '0.00'}</p></CardContent></Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Sales Chart */}
         <Card>
-          <CardHeader>
-            <CardTitle>Tendencia de Ventas</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Ventas por Día</CardTitle></CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={salesData}>
+              <BarChart data={byDay}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip formatter={(value) => [`$${value}`, 'Ventas']} />
-                <Line 
-                  type="monotone" 
-                  dataKey="ventas" 
-                  stroke="#3B82F6" 
-                  strokeWidth={3}
-                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
-                />
-              </LineChart>
+                <Tooltip />
+                <Bar dataKey="ventas" fill="#3B82F6" />
+              </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        {/* Product Distribution */}
         <Card>
-          <CardHeader>
-            <CardTitle>Distribución de Productos Vendidos</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Ventas por Categoría</CardTitle></CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
-                <Pie
-                  data={productSalesData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  dataKey="value"
-                  label={({ name, value }) => `${name}: ${value}%`}
-                >
-                  {productSalesData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
+                <Pie data={byCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+                  {byCategory.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
                 <Tooltip />
+                <Legend />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
-
-        {/* Top Products */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Productos Más Vendidos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {topProducts.map((product, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Badge variant="secondary" className="w-8 h-8 rounded-full flex items-center justify-center">
-                      {index + 1}
-                    </Badge>
-                    <div>
-                      <p className="font-medium text-gray-900">{product.name}</p>
-                      <p className="text-sm text-gray-600">{product.sold} unidades vendidas</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-green-600">${product.revenue}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* User Performance */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Rendimiento por Usuario</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {userSales.map((user, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Users className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{user.user}</p>
-                      <p className="text-sm text-gray-600">{user.invoices} facturas</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-green-600">${user.sales.toLocaleString()}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
-      {/* Monthly Growth */}
       <Card>
-        <CardHeader>
-          <CardTitle>Crecimiento Mensual</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Top Productos</CardTitle></CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={monthlyGrowth}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip 
-                formatter={(value, name) => [
-                  name === 'sales' ? `$${value?.toLocaleString()}` : `${value}%`,
-                  name === 'sales' ? 'Ventas' : 'Crecimiento'
-                ]} 
-              />
-              <Bar dataKey="sales" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="space-y-2">
+            {topProducts.map((p, i) => (
+              <div key={p.name} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                <div className="flex items-center gap-3">
+                  <Badge variant="outline">{i + 1}</Badge>
+                  <span className="font-medium">{p.name}</span>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-600">{p.sold} unidades</p>
+                  <p className="font-semibold text-green-600">${p.revenue.toFixed(2)}</p>
+                </div>
+              </div>
+            ))}
+            {topProducts.length === 0 && <p className="text-center text-gray-500 py-4">Sin datos</p>}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Rendimiento por Cajero</CardTitle></CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {byCashier.map((c) => (
+              <div key={c.name} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                <span className="font-medium">{c.name}</span>
+                <div className="text-right">
+                  <p className="text-sm text-gray-600">{c.count} facturas</p>
+                  <p className="font-semibold text-green-600">${c.total.toFixed(2)}</p>
+                </div>
+              </div>
+            ))}
+            {byCashier.length === 0 && <p className="text-center text-gray-500 py-4">Sin datos</p>}
+          </div>
         </CardContent>
       </Card>
     </div>

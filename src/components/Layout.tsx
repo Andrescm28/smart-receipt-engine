@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { LogOut, Home, Package, FileText, BarChart3, Users } from 'lucide-react';
+import { LogOut, Home, Package, FileText, BarChart3, Users, Receipt } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -20,6 +20,7 @@ const Layout = ({ children, userRole, onLogout }: LayoutProps) => {
     { path: '/billing', label: 'Facturación', icon: FileText, roles: ['admin', 'cashier'] },
     { path: '/reports', label: 'Reportes', icon: BarChart3, roles: ['admin'] },
     { path: '/users', label: 'Usuarios', icon: Users, roles: ['admin'] },
+    { path: '/emisor', label: 'Facturación Electrónica', icon: Receipt, roles: ['admin'] },
   ];
 
   const filteredMenuItems = menuItems.filter(item => item.roles.includes(userRole));

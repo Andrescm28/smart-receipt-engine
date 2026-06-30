@@ -7,13 +7,13 @@ import { Receipt, FileCheck, Clock, AlertCircle, DollarSign } from 'lucide-react
 interface Comprobante {
   id: string;
   consecutivo: string | null;
-  clave: string | null;
-  tipo: string | null;
+  clave_numerica: string | null;
+  tipo_comprobante: string | null;
   estado: string | null;
   total: number | null;
   fecha_emision: string | null;
   receptor_nombre: string | null;
-  mensaje_hacienda: string | null;
+  hacienda_mensaje: string | null;
 }
 
 const estadoBadge = (e: string | null) => {
@@ -109,11 +109,11 @@ const AccountantDashboard = () => {
                     <tr key={c.id} className="border-b hover:bg-gray-50">
                       <td className="p-3 text-sm">{c.fecha_emision ? new Date(c.fecha_emision).toLocaleString() : '—'}</td>
                       <td className="p-3 text-sm font-mono">{c.consecutivo || '—'}</td>
-                      <td className="p-3 text-sm">{c.tipo || '—'}</td>
+                      <td className="p-3 text-sm">{c.tipo_comprobante || '—'}</td>
                       <td className="p-3 text-sm">{c.receptor_nombre || '—'}</td>
                       <td className="p-3 text-sm">₡{Number(c.total ?? 0).toFixed(2)}</td>
                       <td className="p-3"><Badge className={estadoBadge(c.estado)}>{c.estado ?? 'sin estado'}</Badge></td>
-                      <td className="p-3 text-xs text-gray-600 max-w-xs truncate">{c.mensaje_hacienda || '—'}</td>
+                      <td className="p-3 text-xs text-gray-600 max-w-xs truncate">{c.hacienda_mensaje || '—'}</td>
                     </tr>
                   ))}
                   {comprobantes.length === 0 && (

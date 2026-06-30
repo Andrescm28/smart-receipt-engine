@@ -18,6 +18,13 @@ const ROLE_LABEL: Record<AppRole, string> = {
   cashier: 'Cajero',
 };
 
+const ROLE_BADGE: Record<AppRole, string> = {
+  admin: 'bg-blue-100 text-blue-800',
+  inventory: 'bg-purple-100 text-purple-800',
+  accountant: 'bg-amber-100 text-amber-800',
+  cashier: 'bg-green-100 text-green-800',
+};
+
 const Layout = ({ children, userRole, onLogout }: LayoutProps) => {
   const location = useLocation();
 
@@ -37,47 +44,57 @@ const Layout = ({ children, userRole, onLogout }: LayoutProps) => {
   const filteredMenuItems = menuItems.filter((item) => item.roles.includes(userRole));
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <Card className="w-64 h-screen rounded-none border-r shadow-lg">
-        <div className="p-6 border-b">
-          <h1 className="text-xl font-bold text-gray-800">🛒 SuperMarket POS</h1>
-          <p className="text-sm text-gray-600">{ROLE_LABEL[userRole]}</p>
-        </div>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Top Bar — shared across all views */}
+      <Card className="w-full rounded-none border-b shadow-sm">
+        <div className="flex justify-between items-center p-4">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <FileText className="h-6 w-6 text-blue-600" />
+              <h1 className="text-xl font-bold text-gray-800">🛒 SuperMarket POS</h1>
+            </div>
+            <div className={`${ROLE_BADGE[userRole]} px-3 py-1 rounded-full text-sm font-medium`}>
+              {ROLE_LABEL[userRole]}
+            </div>
+          </div>
 
-        <nav className="p-4 space-y-2">
-          {filteredMenuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-
-            return (
-              <Link key={item.path} to={item.path}>
-                <Button
-                  variant={isActive ? 'default' : 'ghost'}
-                  className={`w-full justify-start gap-3 ${
-                    isActive ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  {item.label}
-                </Button>
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="absolute bottom-4 left-4 right-4">
           <Button
             variant="outline"
             onClick={onLogout}
-            className="w-full justify-start gap-3 text-red-600 border-red-200 hover:bg-red-50"
+            className="text-red-600 border-red-200 hover:bg-red-50"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4 mr-2" />
             Cerrar Sesión
           </Button>
         </div>
       </Card>
 
-      <div className="flex-1 p-6 overflow-auto">{children}</div>
+      <div className="flex flex-1 overflow-hidden">
+        <Card className="w-64 rounded-none border-r shadow-sm">
+          <nav className="p-4 space-y-2">
+            {filteredMenuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+
+              return (
+                <Link key={item.path} to={item.path}>
+                  <Button
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={`w-full justify-start gap-3 ${
+                      isActive ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </Button>
+                </Link>
+              );
+            })}
+          </nav>
+        </Card>
+
+        <div className="flex-1 p-6 overflow-auto">{children}</div>
+      </div>
     </div>
   );
 };

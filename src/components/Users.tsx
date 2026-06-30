@@ -56,7 +56,7 @@ const Users = () => {
     full_name: '',
     email: '',
     password: '',
-    role: 'cashier' as 'admin' | 'cashier',
+    role: 'cashier' as Role,
     supermarket_id: '',
   });
 
@@ -67,8 +67,8 @@ const Users = () => {
       supabase.from('user_roles').select('user_id, role'),
       supabase.from('supermarkets').select('id, name').order('name'),
     ]);
-    const byUser: Record<string, ('admin' | 'cashier')[]> = {};
-    (roles ?? []).forEach((r: any) => { byUser[r.user_id] = [...(byUser[r.user_id] ?? []), r.role]; });
+    const byUser: Record<string, Role[]> = {};
+    (roles ?? []).forEach((r: any) => { byUser[r.user_id] = [...(byUser[r.user_id] ?? []), r.role as Role]; });
     setUsers((profiles ?? []).map((p: any) => ({ ...p, roles: byUser[p.id] ?? [] })));
     setSupermarkets((sms as Supermarket[]) ?? []);
     setLoading(false);
@@ -76,15 +76,13 @@ const Users = () => {
 
   useEffect(() => { load(); }, []);
 
-  const toggleAdmin = async (userId: string, hasAdmin: boolean) => {
-    if (hasAdmin) {
-      const { error } = await supabase.from('user_roles').delete().eq('user_id', userId).eq('role', 'admin');
+  const toggleRole = async (userId: string, role: Role, has: boolean) => {
+    if (has) {
+      const { error } = await supabase.from('user_roles').delete().eq('user_id', userId).eq('role', role);
       if (error) return toast({ title: 'Error', description: error.message, variant: 'destructive' });
-      toast({ title: 'Permiso de admin removido' });
     } else {
-      const { error } = await supabase.from('user_roles').insert({ user_id: userId, role: 'admin' });
+      const { error } = await supabase.from('user_roles').insert({ user_id: userId, role });
       if (error) return toast({ title: 'Error', description: error.message, variant: 'destructive' });
-      toast({ title: 'Promovido a administrador' });
     }
     load();
   };
@@ -124,8 +122,8 @@ const Users = () => {
     (u) => (u.full_name ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
            (u.email ?? '').toLowerCase().includes(searchTerm.toLowerCase())
   );
-  const isAdmin = (u: UserRow) => u.roles.includes('admin');
   const smName = (id: string | null) => supermarkets.find((s) => s.id === id)?.name ?? '—';
+  const countBy = (r: Role) => users.filter((u) => u.roles.includes(r)).length;
 
   return (
     <div className="space-y-6">
@@ -145,14 +143,14 @@ const Users = () => {
               <div><Label>Correo</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
               <div><Label>Contraseña (mín. 6)</Label><Input type="password" minLength={6} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} /></div>
               <div>
-                <Label>Rol</Label>
-                <Select value={form.role} onValueChange={(v: 'admin' | 'cashier') => setForm({ ...form, role: v })}>
+                <Label>Rol inicial</Label>
+                <Select value={form.role} onValueChange={(v: Role) => setForm({ ...form, role: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">Administrador</SelectItem>
-                    <SelectItem value="cashier">Cajero/Cajera</SelectItem>
+                    {ROLE_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-gray-500 mt-1">Podrás agregar más roles después si es necesario.</p>
               </div>
               <div>
                 <Label>Supermercado asignado</Label>
@@ -194,9 +192,9 @@ const Users = () => {
                   <tr className="border-b">
                     <th className="text-left p-4 font-medium text-gray-600">Usuario</th>
                     <th className="text-left p-4 font-medium text-gray-600">Email</th>
-                    <th className="text-left p-4 font-medium text-gray-600">Rol</th>
+                    <th className="text-left p-4 font-medium text-gray-600">Roles</th>
                     <th className="text-left p-4 font-medium text-gray-600">Supermercado</th>
-                    <th className="text-left p-4 font-medium text-gray-600">Acciones</th>
+                    <th className="text-left p-4 font-medium text-gray-600">Gestionar roles</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -212,9 +210,12 @@ const Users = () => {
                       </td>
                       <td className="p-4 text-sm text-gray-600">{u.email}</td>
                       <td className="p-4">
-                        <Badge className={isAdmin(u) ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}>
-                          {isAdmin(u) ? 'Administrador' : 'Cajero'}
-                        </Badge>
+                        <div className="flex gap-1 flex-wrap">
+                          {u.roles.length === 0 && <span className="text-xs text-gray-400">Sin rol</span>}
+                          {u.roles.map((r) => (
+                            <Badge key={r} className={ROLE_COLOR[r]}>{ROLE_LABEL[r]}</Badge>
+                          ))}
+                        </div>
                       </td>
                       <td className="p-4 text-sm">
                         <Select value={u.supermarket_id ?? ''} onValueChange={(v) => updateSupermarket(u.id, v)}>
@@ -225,9 +226,21 @@ const Users = () => {
                         </Select>
                       </td>
                       <td className="p-4">
-                        <Button variant="outline" size="sm" onClick={() => toggleAdmin(u.id, isAdmin(u))}>
-                          {isAdmin(u) ? 'Quitar Admin' : 'Hacer Admin'}
-                        </Button>
+                        <div className="flex flex-wrap gap-1">
+                          {ROLE_OPTIONS.map((o) => {
+                            const has = u.roles.includes(o.value);
+                            return (
+                              <Button
+                                key={o.value}
+                                size="sm"
+                                variant={has ? 'default' : 'outline'}
+                                onClick={() => toggleRole(u.id, o.value, has)}
+                              >
+                                {has ? '−' : '+'} {ROLE_LABEL[o.value]}
+                              </Button>
+                            );
+                          })}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -239,10 +252,12 @@ const Users = () => {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card><CardContent className="p-6 text-center"><div className="text-2xl font-bold text-blue-600">{users.length}</div><p className="text-gray-600">Total</p></CardContent></Card>
-        <Card><CardContent className="p-6 text-center"><div className="text-2xl font-bold text-purple-600">{users.filter(isAdmin).length}</div><p className="text-gray-600">Administradores</p></CardContent></Card>
-        <Card><CardContent className="p-6 text-center"><div className="text-2xl font-bold text-green-600">{users.filter((u) => !isAdmin(u)).length}</div><p className="text-gray-600">Cajeros</p></CardContent></Card>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <Card><CardContent className="p-4 text-center"><div className="text-2xl font-bold text-gray-800">{users.length}</div><p className="text-gray-600 text-sm">Total</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><div className="text-2xl font-bold text-purple-600">{countBy('admin')}</div><p className="text-gray-600 text-sm">Administradores</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><div className="text-2xl font-bold text-blue-600">{countBy('cashier')}</div><p className="text-gray-600 text-sm">Cajeros</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><div className="text-2xl font-bold text-amber-600">{countBy('inventory')}</div><p className="text-gray-600 text-sm">Inventario</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><div className="text-2xl font-bold text-emerald-600">{countBy('accountant')}</div><p className="text-gray-600 text-sm">Contadores</p></CardContent></Card>
       </div>
     </div>
   );

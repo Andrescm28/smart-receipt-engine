@@ -11,6 +11,9 @@ import CashierLayout from "@/components/CashierLayout";
 import CashCut from "@/components/CashCut";
 import EmisorConfig from "@/components/EmisorConfig";
 import Supermarkets from "@/components/Supermarkets";
+import InventoryRequests from "@/components/InventoryRequests";
+import InventoryApprovals from "@/components/InventoryApprovals";
+import AccountantDashboard from "@/components/AccountantDashboard";
 import { useAuth } from "@/hooks/useAuth";
 
 export interface Product {
@@ -55,6 +58,32 @@ const Index = () => {
     );
   }
 
+  if (role === 'inventory') {
+    return (
+      <Layout userRole={role} onLogout={signOut}>
+        <Routes>
+          <Route path="/" element={<Navigate to="/products" replace />} />
+          <Route path="/products" element={<Products userRole={role} />} />
+          <Route path="/inventory-requests" element={<InventoryRequests />} />
+          <Route path="*" element={<Navigate to="/products" replace />} />
+        </Routes>
+      </Layout>
+    );
+  }
+
+  if (role === 'accountant') {
+    return (
+      <Layout userRole={role} onLogout={signOut}>
+        <Routes>
+          <Route path="/" element={<Navigate to="/accounting" replace />} />
+          <Route path="/accounting" element={<AccountantDashboard />} />
+          <Route path="/emisor" element={<EmisorConfig />} />
+          <Route path="*" element={<Navigate to="/accounting" replace />} />
+        </Routes>
+      </Layout>
+    );
+  }
+
   return (
     <Layout userRole={role} onLogout={signOut}>
       <Routes>
@@ -65,6 +94,7 @@ const Index = () => {
         <Route path="/users" element={<Users />} />
         <Route path="/supermarkets" element={<Supermarkets />} />
         <Route path="/emisor" element={<EmisorConfig />} />
+        <Route path="/inventory-approvals" element={<InventoryApprovals />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

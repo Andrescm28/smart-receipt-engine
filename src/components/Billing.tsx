@@ -148,7 +148,7 @@ const Billing = () => {
 
       setLastPayment(result);
       setLastInvoice(invoice.invoice_number);
-      toast({ title: 'Factura generada', description: `${invoice.invoice_number} — Total $${total.toFixed(2)}` });
+      toast({ title: 'Factura generada', description: `${invoice.invoice_number} — Total ₡${total.toFixed(2)}` });
 
       setCart([]);
       setCustomerName('');

@@ -41,7 +41,7 @@ const Dashboard = () => {
   }, []);
 
   const cards = [
-    { title: 'Ventas Hoy', value: `$${stats.todaySales.toFixed(2)}`, icon: DollarSign, color: 'text-green-600', bg: 'bg-green-50' },
+    { title: 'Ventas Hoy', value: `₡${stats.todaySales.toFixed(2)}`, icon: DollarSign, color: 'text-green-600', bg: 'bg-green-50' },
     { title: 'Facturas Hoy', value: String(stats.todayInvoices), icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
     { title: 'Productos Vendidos', value: String(stats.todayItems), icon: Package, color: 'text-purple-600', bg: 'bg-purple-50' },
     { title: 'Stock Bajo', value: String(stats.lowStock), icon: TrendingUp, color: 'text-red-600', bg: 'bg-red-50' },

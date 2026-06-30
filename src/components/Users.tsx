@@ -10,14 +10,37 @@ import { supabase } from '@/integrations/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
+type Role = 'admin' | 'cashier' | 'inventory' | 'accountant';
+
 interface UserRow {
   id: string;
   full_name: string | null;
   email: string | null;
-  roles: ('admin' | 'cashier')[];
+  roles: Role[];
   created_at: string;
   supermarket_id: string | null;
 }
+
+const ROLE_OPTIONS: { value: Role; label: string }[] = [
+  { value: 'admin', label: 'Administrador' },
+  { value: 'cashier', label: 'Cajero/Cajera' },
+  { value: 'inventory', label: 'Inventario' },
+  { value: 'accountant', label: 'Contador' },
+];
+
+const ROLE_LABEL: Record<Role, string> = {
+  admin: 'Administrador',
+  cashier: 'Cajero',
+  inventory: 'Inventario',
+  accountant: 'Contador',
+};
+
+const ROLE_COLOR: Record<Role, string> = {
+  admin: 'bg-purple-100 text-purple-800',
+  cashier: 'bg-blue-100 text-blue-800',
+  inventory: 'bg-amber-100 text-amber-800',
+  accountant: 'bg-emerald-100 text-emerald-800',
+};
 
 interface Supermarket { id: string; name: string }
 

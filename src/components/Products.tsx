@@ -23,7 +23,7 @@ export interface ProductRow {
 }
 
 interface ProductsProps {
-  userRole: 'admin' | 'cashier';
+  userRole: 'admin' | 'cashier' | 'inventory' | 'accountant';
 }
 
 const emptyForm = { code: '', name: '', price: 0, category: '', unit: 'Unidad', stock: 0, min_stock: 0 };
@@ -122,7 +122,7 @@ const Products = ({ userRole }: ProductsProps) => {
           <h1 className="text-3xl font-bold text-gray-900">Gestión de Productos</h1>
           <p className="text-gray-600">Administra el inventario del supermercado</p>
         </div>
-        {userRole === 'admin' && (
+        {(userRole === 'admin' || userRole === 'inventory') && (
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={openNew} className="flex items-center gap-2">
@@ -181,10 +181,12 @@ const Products = ({ userRole }: ProductsProps) => {
                     <CardTitle className="text-lg">{p.name}</CardTitle>
                     <p className="text-sm text-gray-600">Código: {p.code}</p>
                   </div>
-                  {userRole === 'admin' && (
+                  {(userRole === 'admin' || userRole === 'inventory') && (
                     <div className="flex gap-1">
                       <Button variant="ghost" size="sm" onClick={() => handleEdit(p)}><Edit className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(p.id)} className="text-red-600"><Trash2 className="h-4 w-4" /></Button>
+                      {userRole === 'admin' && (
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(p.id)} className="text-red-600"><Trash2 className="h-4 w-4" /></Button>
+                      )}
                     </div>
                   )}
                 </div>

@@ -310,6 +310,59 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_adjustment_requests: {
+        Row: {
+          adjustment_type: string
+          created_at: string
+          id: string
+          product_id: string
+          quantity: number
+          reason: string | null
+          requested_by: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          adjustment_type: string
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity: number
+          reason?: string | null
+          requested_by: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          adjustment_type?: string
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+          reason?: string | null
+          requested_by?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_adjustment_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_movements: {
         Row: {
           created_at: string
@@ -680,7 +733,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "cashier"
+      app_role: "admin" | "cashier" | "inventory" | "accountant"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -808,7 +861,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "cashier"],
+      app_role: ["admin", "cashier", "inventory", "accountant"],
     },
   },
 } as const

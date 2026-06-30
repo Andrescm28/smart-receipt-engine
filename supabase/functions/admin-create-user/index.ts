@@ -6,6 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const VALID_ROLES = ["admin", "cashier", "inventory", "accountant"];
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -18,7 +20,6 @@ Deno.serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
     if (!token) return json({ error: "Unauthorized" }, 401);
 
-    // Verify caller and check admin
     const userClient = createClient(SUPABASE_URL, ANON_KEY, {
       global: { headers: { Authorization: `Bearer ${token}` } },
     });
@@ -37,7 +38,7 @@ Deno.serve(async (req) => {
     if (!email || !password || !full_name || !role) {
       return json({ error: "Missing required fields" }, 400);
     }
-    if (role !== "admin" && role !== "cashier") {
+    if (!VALID_ROLES.includes(role)) {
       return json({ error: "Invalid role" }, 400);
     }
 
@@ -49,10 +50,15 @@ Deno.serve(async (req) => {
     });
     if (createErr) return json({ error: createErr.message }, 400);
 
-    // Ensure the requested role exists (trigger inserts default; correct if admin)
-    if (role === "admin") {
-      await admin.from("user_roles").insert({ user_id: created.user!.id, role: "admin" });
-      await admin.from("user_roles").delete().eq("user_id", created.user!.id).eq("role", "cashier");
+    // Trigger handle_new_user inserts the selected role automatically.
+    // For non-cashier roles, also ensure the default 'cashier' insertion is removed if it shouldn't be there.
+    if (role !== "cashier") {
+      await admin.from("user_roles").delete()
+        .eq("user_id", created.user!.id)
+        .eq("role", "cashier");
+      // Insert requested role in case trigger fallback set a different default
+      await admin.from("user_roles")
+        .upsert({ user_id: created.user!.id, role }, { onConflict: "user_id,role" });
     }
 
     return json({ ok: true, user_id: created.user!.id });

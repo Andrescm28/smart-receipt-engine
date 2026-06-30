@@ -92,7 +92,7 @@ const CashCut = ({ onClose }: CashCutProps) => {
     });
     setSaving(false);
     if (error) return toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    toast({ title: 'Corte generado', description: `Diferencia: ${difference.toFixed(2)}` });
+    toast({ title: 'Corte generado', description: `Diferencia: ₡${difference.toFixed(2)}` });
     onClose();
   };
 

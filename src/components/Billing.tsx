@@ -245,7 +245,7 @@ const Billing = () => {
             <Separator />
             <div className="space-y-2">
               <div className="flex justify-between"><span>Subtotal:</span><span>₡${subtotal.toFixed(2)}</span></div>
-              {discount > 0 && <div className="flex justify-between text-green-600"><span>Descuento ({discount}%):</span><span>₡-${discountAmount.toFixed(2)}</span></div>}
+              {discount > 0 && <div className="flex justify-between text-green-600"><span>Descuento ({discount}%):</span><span>-₡{discountAmount.toFixed(2)}</span></div>}
               <div className="flex justify-between"><span>Impuestos:</span><span>₡${tax.toFixed(2)}</span></div>
               <Separator />
               <div className="flex justify-between text-lg font-bold"><span>Total:</span><span>₡${total.toFixed(2)}</span></div>

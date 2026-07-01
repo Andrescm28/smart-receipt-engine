@@ -15,6 +15,7 @@ export interface ProductRow {
   code: string;
   name: string;
   price: number;
+  cost_price: number;
   category: string | null;
   unit: string;
   stock: number;
@@ -26,7 +27,7 @@ interface ProductsProps {
   userRole: 'admin' | 'cashier' | 'inventory' | 'accountant';
 }
 
-const emptyForm = { code: '', name: '', price: 0, category: '', unit: 'Unidad', stock: 0, min_stock: 0 };
+const emptyForm = { code: '', name: '', price: 0, cost_price: 0, category: '', unit: 'Unidad', stock: 0, min_stock: 0 };
 
 const Products = ({ userRole }: ProductsProps) => {
   const { toast } = useToast();
@@ -88,6 +89,7 @@ const Products = ({ userRole }: ProductsProps) => {
       code: p.code,
       name: p.name,
       price: Number(p.price),
+      cost_price: Number(p.cost_price ?? 0),
       category: p.category ?? '',
       unit: p.unit,
       stock: Number(p.stock),
@@ -136,7 +138,8 @@ const Products = ({ userRole }: ProductsProps) => {
               <div className="space-y-4">
                 <div><Label>Código</Label><Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} /></div>
                 <div><Label>Nombre</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-                <div><Label>Precio</Label><Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })} /></div>
+                <div><Label>Precio de costo (₡)</Label><Input type="number" step="0.01" value={form.cost_price} onChange={(e) => setForm({ ...form, cost_price: parseFloat(e.target.value) || 0 })} /></div>
+                <div><Label>Precio de venta (₡)</Label><Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })} /></div>
                 <div>
                   <Label>Categoría</Label>
                   <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
@@ -193,7 +196,8 @@ const Products = ({ userRole }: ProductsProps) => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex justify-between"><span className="text-sm text-gray-600">Precio:</span><span className="font-semibold text-green-600">${Number(p.price).toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span className="text-sm text-gray-600">Costo:</span><span className="font-medium text-gray-700">₡{Number(p.cost_price ?? 0).toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span className="text-sm text-gray-600">Precio venta:</span><span className="font-semibold text-green-600">₡{Number(p.price).toFixed(2)}</span></div>
                   <div className="flex justify-between"><span className="text-sm text-gray-600">Categoría:</span><Badge variant="secondary">{p.category}</Badge></div>
                   <div className="flex justify-between"><span className="text-sm text-gray-600">Unidad:</span><span className="text-sm">{p.unit}</span></div>
                   <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Stock:</span><Badge className={stockBadge(Number(p.stock), Number(p.min_stock))}>{Number(p.stock)}</Badge></div>

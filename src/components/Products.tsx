@@ -89,6 +89,7 @@ const Products = ({ userRole }: ProductsProps) => {
       code: p.code,
       name: p.name,
       price: Number(p.price),
+      cost_price: Number(p.cost_price ?? 0),
       category: p.category ?? '',
       unit: p.unit,
       stock: Number(p.stock),

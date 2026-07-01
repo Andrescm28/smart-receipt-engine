@@ -196,7 +196,8 @@ const Products = ({ userRole }: ProductsProps) => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex justify-between"><span className="text-sm text-gray-600">Precio:</span><span className="font-semibold text-green-600">₡${Number(p.price).toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span className="text-sm text-gray-600">Costo:</span><span className="font-medium text-gray-700">₡{Number(p.cost_price ?? 0).toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span className="text-sm text-gray-600">Precio venta:</span><span className="font-semibold text-green-600">₡{Number(p.price).toFixed(2)}</span></div>
                   <div className="flex justify-between"><span className="text-sm text-gray-600">Categoría:</span><Badge variant="secondary">{p.category}</Badge></div>
                   <div className="flex justify-between"><span className="text-sm text-gray-600">Unidad:</span><span className="text-sm">{p.unit}</span></div>
                   <div className="flex justify-between items-center"><span className="text-sm text-gray-600">Stock:</span><Badge className={stockBadge(Number(p.stock), Number(p.min_stock))}>{Number(p.stock)}</Badge></div>

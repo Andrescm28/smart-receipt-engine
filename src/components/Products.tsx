@@ -15,6 +15,7 @@ export interface ProductRow {
   code: string;
   name: string;
   price: number;
+  cost_price: number;
   category: string | null;
   unit: string;
   stock: number;
@@ -26,7 +27,7 @@ interface ProductsProps {
   userRole: 'admin' | 'cashier' | 'inventory' | 'accountant';
 }
 
-const emptyForm = { code: '', name: '', price: 0, category: '', unit: 'Unidad', stock: 0, min_stock: 0 };
+const emptyForm = { code: '', name: '', price: 0, cost_price: 0, category: '', unit: 'Unidad', stock: 0, min_stock: 0 };
 
 const Products = ({ userRole }: ProductsProps) => {
   const { toast } = useToast();

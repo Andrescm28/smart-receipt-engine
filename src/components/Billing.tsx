@@ -148,7 +148,7 @@ const Billing = () => {
 
       setLastPayment(result);
       setLastInvoice(invoice.invoice_number);
-      toast({ title: 'Factura generada', description: `${invoice.invoice_number} — Total ₡${total.toFixed(2)}` });
+      toast({ title: 'Factura generada', description: `₡${invoice.invoice_number} — Total ₡${total.toFixed(2)}` });
 
       setCart([]);
       setCustomerName('');
@@ -191,7 +191,7 @@ const Billing = () => {
                   <Badge variant="secondary">{Number(p.stock)} disp.</Badge>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold text-green-600">${Number(p.price).toFixed(2)}</span>
+                  <span className="text-lg font-bold text-green-600">₡${Number(p.price).toFixed(2)}</span>
                   <Button size="sm" onClick={() => addToCart(p)} disabled={p.stock <= 0}>
                     <Plus className="h-4 w-4" /> Agregar
                   </Button>
@@ -222,7 +222,7 @@ const Billing = () => {
                   <div key={i.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div className="flex-1">
                       <h4 className="font-medium text-sm">{i.name}</h4>
-                      <p className="text-xs text-muted-foreground">${Number(i.price).toFixed(2)} c/u</p>
+                      <p className="text-xs text-muted-foreground">₡${Number(i.price).toFixed(2)} c/u</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button variant="outline" size="sm" onClick={() => updateQty(i.id, i.quantity - 1)}><Minus className="h-3 w-3" /></Button>
@@ -230,7 +230,7 @@ const Billing = () => {
                       <Button variant="outline" size="sm" onClick={() => updateQty(i.id, i.quantity + 1)}><Plus className="h-3 w-3" /></Button>
                       <Button variant="ghost" size="sm" onClick={() => updateQty(i.id, 0)} className="text-destructive"><Trash2 className="h-3 w-3" /></Button>
                     </div>
-                    <div className="w-20 text-right font-semibold">${(Number(i.price) * i.quantity).toFixed(2)}</div>
+                    <div className="w-20 text-right font-semibold">₡${(Number(i.price) * i.quantity).toFixed(2)}</div>
                   </div>
                 ))}
               </div>
@@ -244,11 +244,11 @@ const Billing = () => {
             <div><Label>Descuento (%)</Label><Input type="number" min="0" max="100" value={discount} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} /></div>
             <Separator />
             <div className="space-y-2">
-              <div className="flex justify-between"><span>Subtotal:</span><span>${subtotal.toFixed(2)}</span></div>
-              {discount > 0 && <div className="flex justify-between text-green-600"><span>Descuento ({discount}%):</span><span>-${discountAmount.toFixed(2)}</span></div>}
-              <div className="flex justify-between"><span>Impuestos:</span><span>${tax.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span>Subtotal:</span><span>₡${subtotal.toFixed(2)}</span></div>
+              {discount > 0 && <div className="flex justify-between text-green-600"><span>Descuento ({discount}%):</span><span>₡-${discountAmount.toFixed(2)}</span></div>}
+              <div className="flex justify-between"><span>Impuestos:</span><span>₡${tax.toFixed(2)}</span></div>
               <Separator />
-              <div className="flex justify-between text-lg font-bold"><span>Total:</span><span>${total.toFixed(2)}</span></div>
+              <div className="flex justify-between text-lg font-bold"><span>Total:</span><span>₡${total.toFixed(2)}</span></div>
             </div>
           </CardContent>
         </Card>
@@ -261,9 +261,9 @@ const Billing = () => {
             <CardContent className="space-y-1 text-sm text-green-700">
               <div className="flex justify-between"><span>Factura:</span><span className="font-mono">{lastInvoice}</span></div>
               <div className="flex justify-between"><span>Tipo:</span><Badge variant="outline">{lastPayment.paymentType}</Badge></div>
-              {lastPayment.cashReceived > 0 && <div className="flex justify-between"><span>Efectivo:</span><span>${lastPayment.cashReceived.toFixed(2)}</span></div>}
-              {lastPayment.cardReceived > 0 && <div className="flex justify-between"><span>Tarjeta:</span><span>${lastPayment.cardReceived.toFixed(2)}</span></div>}
-              {lastPayment.changeAmount > 0 && <div className="flex justify-between"><span>Cambio:</span><span>${lastPayment.changeAmount.toFixed(2)}</span></div>}
+              {lastPayment.cashReceived > 0 && <div className="flex justify-between"><span>Efectivo:</span><span>₡${lastPayment.cashReceived.toFixed(2)}</span></div>}
+              {lastPayment.cardReceived > 0 && <div className="flex justify-between"><span>Tarjeta:</span><span>₡${lastPayment.cardReceived.toFixed(2)}</span></div>}
+              {lastPayment.changeAmount > 0 && <div className="flex justify-between"><span>Cambio:</span><span>₡${lastPayment.changeAmount.toFixed(2)}</span></div>}
             </CardContent>
           </Card>
         )}

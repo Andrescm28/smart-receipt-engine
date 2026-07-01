@@ -138,7 +138,8 @@ const Products = ({ userRole }: ProductsProps) => {
               <div className="space-y-4">
                 <div><Label>Código</Label><Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} /></div>
                 <div><Label>Nombre</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-                <div><Label>Precio</Label><Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })} /></div>
+                <div><Label>Precio de costo (₡)</Label><Input type="number" step="0.01" value={form.cost_price} onChange={(e) => setForm({ ...form, cost_price: parseFloat(e.target.value) || 0 })} /></div>
+                <div><Label>Precio de venta (₡)</Label><Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })} /></div>
                 <div>
                   <Label>Categoría</Label>
                   <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
